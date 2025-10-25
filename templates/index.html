@@ -155,15 +155,15 @@
   </div>
 
   <div id="card-container"></div>
-  <div class="guess-display" id="guessDisplay"></div>
-    <div id="message"></div>
-  <div id="mana-buttons"></div>
-
-  <div>
+    <div>
     <button onclick="undoGuess()">Undo</button>
     <button onclick="clearGuess()">Clear</button>
     <button onclick="submitGuess()" id="guessButton">Guess</button>
   </div>
+  <div class="guess-display" id="guessDisplay"></div>
+    <div id="message"></div>
+  <div id="mana-buttons"></div>
+
 
 
 
@@ -284,10 +284,11 @@ async function submitGuess() {
   // Clear the previous guess and display the correct mana cost as SVGs
   currentGuess = [];
   renderGuess();
-  document.getElementById("guessDisplay").innerHTML = renderManaIconsFromCost(result.correct_cost || guess);
+  document.getElementById("message").innerHTML += renderManaIconsFromCost(result.correct_cost || guess);
 
   if (result.game_over) {
     document.getElementById("message").textContent += " 💀 Game Over!";
+    document.getElementById("message").innerHTML += renderManaIconsFromCost(result.correct_cost || guess);
     gameOver = true;
   }
 

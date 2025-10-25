@@ -14,7 +14,8 @@ def index():
 
 @app.route("/get_card")
 def get_card():
-    response = requests.get("https://api.scryfall.com/cards/random")
+    
+    response = requests.get("https://api.scryfall.com/cards/random?q=(-type%3Aland+-type%3Atoken+-is:mdfc+-is:adventure)")
     data = response.json()
 
     card = {
