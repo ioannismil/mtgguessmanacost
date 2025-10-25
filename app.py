@@ -36,15 +36,19 @@ def guess():
     if user_guess == correct_cost:
         session["score"] += 1
         result["correct"] = True
-        result["message"] = f"✅ Correct! The mana cost was {correct_cost}."
+        result["message"] = "✅ Correct!"
     else:
         session["lives"] -= 1
         result["correct"] = False
-        result["message"] = f"❌ Wrong! The mana cost was {correct_cost}."
+        result["message"] = "❌ Wrong!"
 
     result["lives"] = session["lives"]
     result["score"] = session["score"]
     result["game_over"] = session["lives"] <= 0
+
+    # Return the correct mana cost separately for frontend SVG rendering
+    result["correct_cost"] = correct_cost
+
     return jsonify(result)
 
 @app.route("/reset", methods=["POST"])

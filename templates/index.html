@@ -156,6 +156,7 @@
 
   <div id="card-container"></div>
   <div class="guess-display" id="guessDisplay"></div>
+    <div id="message"></div>
   <div id="mana-buttons"></div>
 
   <div>
@@ -164,7 +165,7 @@
     <button onclick="submitGuess()" id="guessButton">Guess</button>
   </div>
 
-  <div id="message"></div>
+
 
   <script>
     const manaSymbols = [
@@ -238,7 +239,6 @@
           ${card.image ? `<img src="${card.image}" class="card-image" alt="${card.name}" />` : ""}
           <div class="hide-mana-cost"></div>
         </div>
-        <h2>${card.name}</h2>
       `;
 
       document.getElementById("message").textContent = "";
@@ -248,33 +248,51 @@
       gameOver = false;
     }
 
-    async function submitGuess() {
-      if (buttonsDisabled) return;
-      disableAllButtons();
+    function renderManaIconsFromCost(manaCost) {
+  if (!manaCost) return "(No mana cost)";
+  const symbols = manaCost.match(/\{.*?\}/g) || [];
+  return symbols
+    .map(sym => {
+      const clean = sym.replace(/[{}]/g, "");
+      const url = `https://svgs.scryfall.io/card-symbols/${clean}.svg`;
+      return `<img src="${url}" class="mana-symbol" title="${sym}">`;
+    })
+    .join("");
+}
 
-      const guess = currentGuess.length > 0 
-          ? currentGuess.map(sym => `{${sym}}`).join("") 
-          : "";
+async function submitGuess() {
+  if (buttonsDisabled) return;
+  disableAllButtons();
 
-      const res = await fetch("/guess", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guess })
-      });
+  const guess = currentGuess.length > 0 
+      ? currentGuess.map(sym => `{${sym}}`).join("") 
+      : "";
 
-      const result = await res.json();
+  const res = await fetch("/guess", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ guess })
+  });
 
-      document.getElementById("message").textContent = result.message;
-      document.getElementById("lives").textContent = result.lives;
-      document.getElementById("score").textContent = result.score;
+  const result = await res.json();
 
-      if (result.game_over) {
-        document.getElementById("message").textContent += " 💀 Game Over!";
-        gameOver = true;
-      }
+  // Show the result message
+  document.getElementById("message").textContent = result.message;
+  document.getElementById("lives").textContent = result.lives;
+  document.getElementById("score").textContent = result.score;
 
-      showNextButton();
-    }
+  // Clear the previous guess and display the correct mana cost as SVGs
+  currentGuess = [];
+  renderGuess();
+  document.getElementById("guessDisplay").innerHTML = renderManaIconsFromCost(result.correct_cost || guess);
+
+  if (result.game_over) {
+    document.getElementById("message").textContent += " 💀 Game Over!";
+    gameOver = true;
+  }
+
+  showNextButton();
+}
 
     function showNextButton() {
       hideNextButton();
@@ -287,6 +305,8 @@
           await resetGame();
         }
         loadCard();
+          currentGuess = [];
+  renderGuess();
       };
       document.getElementById("message").appendChild(nextBtn);
     }
