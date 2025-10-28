@@ -69,6 +69,16 @@
       border-top-right-radius: 10px;
       border-bottom-left-radius: 40px;
     }
+    .show-mana-cost {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 30%;
+      height: 10%;
+      background: rgba(32, 35, 42, 0);
+      border-top-right-radius: 10px;
+      border-bottom-left-radius: 40px;
+    }
 
     .mana-symbol {
       width: 38px;
@@ -176,6 +186,7 @@
     window.onload = () => {
   loadSets();
   loadCard();
+  renderManaButtons();
     document.getElementById("setSelect").addEventListener("change", resetGameOnSetChange);
 };
     async function loadSets() {
@@ -274,7 +285,7 @@ async function resetGameOnSetChange() {
       document.getElementById("card-container").innerHTML = `
         <div class="card-container">
           ${card.image ? `<img src="${card.image}" class="card-image" alt="${card.name}" />` : ""}
-          <div class="hide-mana-cost"></div>
+          <div id="mana_symbol" class="hide-mana-cost"></div>
         </div>
       `;
 
@@ -310,14 +321,13 @@ async function submitGuess() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ guess })
   });
-
+  document.getElementById("mana_symbol").className='show-mana-cost';
   const result = await res.json();
 
   // Show the result message
   document.getElementById("message").textContent = result.message;
   document.getElementById("lives").textContent = result.lives;
   document.getElementById("score").textContent = result.score;
-
   // Clear the previous guess and display the correct mana cost as SVGs
   currentGuess = [];
   renderGuess();
@@ -374,8 +384,7 @@ async function submitGuess() {
       document.querySelectorAll("button").forEach(el => el.disabled = false);
     }
 
-    renderManaButtons();
-    loadCard();
+    
   </script>
 </body>
 </html>
