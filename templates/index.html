@@ -153,7 +153,12 @@
     Tap the mana symbols to build your guess.<br>
     If the card has <b>no mana cost</b>, just press <b>Guess</b>.
   </div>
-
+<div class="set-filter">
+  <label for="setSelect">Filter by Set:</label>
+  <select id="setSelect">
+    <option value="">All Sets</option>
+  </select>
+</div>
   <div id="card-container"></div>
     <div>
     <button onclick="undoGuess()">Undo</button>
@@ -168,6 +173,37 @@
 
 
   <script>
+    window.onload = () => {
+  loadSets();
+  loadCard();
+    document.getElementById("setSelect").addEventListener("change", resetGameOnSetChange);
+};
+    async function loadSets() {
+  const res = await fetch("/get_sets");
+  const sets = await res.json();
+
+  const select = document.getElementById("setSelect");
+  sets.forEach(s => {
+    const option = document.createElement("option");
+    option.value = s.code;
+    option.textContent = `${s.name} (${s.code.toUpperCase()})`;
+    select.appendChild(option);
+  });
+}
+document.getElementById("setSelect").addEventListener("change", resetGameOnSetChange);
+async function resetGameOnSetChange() {
+  await fetch("/reset_game", { method: "POST" });
+  
+  document.getElementById("lives").textContent = "3";
+  document.getElementById("score").textContent = "0";
+  document.getElementById("message").textContent = "New set selected — game restarting!";
+  currentGuess = [];
+  renderGuess();
+
+  loadCard();
+}
+
+
     const manaSymbols = [
       "0","1","2","3","4","5","6","7","8","9","10",
       "W","U","B","R","G",
@@ -229,7 +265,8 @@
     }
 
     async function loadCard() {
-      const res = await fetch("/get_card");
+      const selectedSet = document.getElementById("setSelect").value;
+      const res = await fetch(`/get_card${selectedSet ? "?set=" + selectedSet : ""}`);
       const card = await res.json();
 
       const manaIcons = renderManaCost(card.mana_cost);

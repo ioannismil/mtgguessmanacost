@@ -12,10 +12,19 @@ def index():
         session["score"] = 0
     return render_template("index.html", lives=session["lives"], score=session["score"])
 
+@app.route("/reset_game", methods=["POST"])
+def reset_game():
+    session["lives"] = 3
+    session["score"] = 0
+    return jsonify({"message": "Game restarting!"})
+
 @app.route("/get_card")
 def get_card():
-    
-    response = requests.get("https://api.scryfall.com/cards/random?q=(-type%3Aland+-type%3Atoken+-is:mdfc+-is:adventure)")
+    selected_set = request.args.get("set", "").lower().strip()
+    base_query="https://api.scryfall.com/cards/random?q=(-type%3Aland+-type%3Atoken+-is:mdfc+-is:adventure)"
+    if selected_set:
+        base_query += f" set:{selected_set}"
+    response = requests.get(base_query)
     data = response.json()
 
     card = {
@@ -28,6 +37,18 @@ def get_card():
     session["current_mana_cost"] = card["mana_cost"].upper().replace(" ", "")
     return jsonify(card)
 
+@app.route("/get_sets")
+def get_sets():
+    r = requests.get("https://api.scryfall.com/sets")
+    data = r.json()
+
+    sets = [
+        {"code": s["code"], "name": s["name"]}
+        for s in data.get("data", [])
+        if not s["set_type"] in ["token", "promo", "memorabilia"]
+    ]
+
+    return jsonify(sets)
 @app.route("/guess", methods=["POST"])
 def guess():
     user_guess = request.json["guess"].upper().replace(" ", "")
