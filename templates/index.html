@@ -245,9 +245,7 @@ async function resetGameOnSetChange() {
     function renderGuess() {
       const display = document.getElementById("guessDisplay");
       display.innerHTML = currentGuess
-        .map(sym => {
-          const clean = sym.replace(/[{}]/g, "");
-          `<img src="https://svgs.scryfall.io/card-symbols/${clean}.svg" class="mana-symbol">`})
+        .map(sym => `<img src="https://svgs.scryfall.io/card-symbols/${sym}.svg" class="mana-symbol">`)
         .join("");
     }
 
