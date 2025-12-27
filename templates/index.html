@@ -232,6 +232,7 @@ async function resetGameOnSetChange() {
 
     function renderManaCost(manaCost) {
       if (!manaCost) return "";
+      
       const symbols = manaCost.match(/\{.*?\}/g) || [];
       return symbols
         .map(sym => {
@@ -244,8 +245,8 @@ async function resetGameOnSetChange() {
 
     function renderGuess() {
       const display = document.getElementById("guessDisplay");
+      
       display.innerHTML = currentGuess
-      sym.replace("/","")
         .map(sym => `<img src="https://svgs.scryfall.io/card-symbols/${sym}.svg" class="mana-symbol">`)
         .join("");
     }
@@ -302,10 +303,11 @@ async function resetGameOnSetChange() {
 
     function renderManaIconsFromCost(manaCost) {
   if (!manaCost) return "(No mana cost)";
+  
   const symbols = manaCost.match(/\{.*?\}/g) || [];
   return symbols
     .map(sym => {
-      const clean = sym.replace(/[{}]/g, "");
+      const clean = sym.replace(/[{}]/g, "").replace("/", "");
       const url = `https://svgs.scryfall.io/card-symbols/${clean}.svg`;
       return `<img src="${url}" class="mana-symbol" title="${sym}">`;
     })
