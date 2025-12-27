@@ -52,9 +52,7 @@ def get_sets():
 @app.route("/guess", methods=["POST"])
 def guess():
     user_guess = request.json["guess"].upper().replace(" ", "")
-    print(user_guess)
     correct_cost = session.get("current_mana_cost", "").replace("/", "")
-    print(correct_cost)
     result = {}
     if user_guess == correct_cost:
         session["score"] += 1
