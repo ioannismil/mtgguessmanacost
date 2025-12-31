@@ -19,6 +19,7 @@
       padding: 0;
       text-align: center;
       background-color: var(--bg-color);
+      background: radial-gradient(circle at center, #2c313c 0%, #20232a 100%);
       color: var(--text-color);
       font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       display: flex;
@@ -30,20 +31,49 @@
     }
 
     h1 {
-      font-size: clamp(1.5rem, 5vw, 2rem);
-      margin-top: 1rem;
+      font-size: clamp(2rem, 6vw, 3rem);
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      /* background: linear-gradient(to right, #61dafb, #d6d6d6); */
+      -webkit-background-clip: text;
+      background-clip: text;
+      /* -webkit-text-fill-color: transparent; */
+      text-shadow: 0 0 20px rgba(97, 218, 251, 0.3);
+      font-weight: 800;
+      letter-spacing: -0.5px;
     }
 
     #stats {
-      margin: 0.5rem 0;
-      font-size: 1.1rem;
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      margin: 0.5rem 0 1.5rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #stats span {
+      font-weight: bold;
+      color: var(--accent);
+      margin-left: 5px;
     }
 
     #instructions {
-      color: #ccc;
-      font-size: 0.9rem;
-      margin-bottom: 0.5rem;
+      color: #a0a0a0;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
       padding: 0 1rem;
+      line-height: 1.5;
+      max-width: 600px;
+    }
+
+    #instructions b {
+      color: #fff;
+      font-weight: 600;
     }
 
     .card-container {
@@ -389,370 +419,458 @@
       transform: translate(-50%, -50%) rotate(-45deg);
       border-radius: 2px;
     }
+
+    .filter-toggle-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ccc;
+      padding: 0.6rem 1.2rem;
+      border-radius: 30px;
+      cursor: pointer;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-toggle-btn:hover {
+      background: rgba(97, 218, 251, 0.1);
+      border-color: rgba(97, 218, 251, 0.3);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    .filter-container {
+      width: 100%;
+      max-width: 600px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 1.5rem;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 
 <body>
-  <h1>Guess the Mana Cost</h1>
-  <div id="stats">
-    Lives: <span id="lives">{{ lives }}</span> | Score: <span id="score">{{ score }}</span>
-  </div>
-
+  <h1>Guess the Mana Cost </h1>
   <div id="instructions">
-    Tap the mana symbols to build your guess.<br>
-    If the card has <b>no mana cost</b>, just press <b>Guess</b>.
+    Test your knowledge! Tap the <b style="color:#61dafb">mana symbols</b> to recreate the card's cost.
   </div>
-  <div class="set-filter">
-    <label for="setSelect">Filter by Set:</label>
-    <select id="setSelect" class="setDropdown" style="width:100%;max-width:90%;">
-      <option value="">All Sets</option>
-    </select>
+  <div id="stats">
+    Lives: <span id="lives">{{ lives }}</span> &nbsp;&nbsp;|&nbsp;&nbsp; Score: <span id="score">{{ score
+      }}</span>
   </div>
+  <button id="filter-toggle" class="filter-toggle-btn" onclick="toggleFilters()">
+    Game Settings & Filters
+  </button>
 
-  <div class="color-filter">
-    <label>Filter by Color:</label>
-    <div class="color-checkboxes">
-      <label class="color-checkbox white">
-        <input type="checkbox" id="colorW" value="W" checked>
-        <span class="color-icon">W</span>
-      </label>
-      <label class="color-checkbox blue">
-        <input type="checkbox" id="colorU" value="U" checked>
-        <span class="color-icon">U</span>
-      </label>
-      <label class="color-checkbox black">
-        <input type="checkbox" id="colorB" value="B" checked>
-        <span class="color-icon">B</span>
-      </label>
-      <label class="color-checkbox red">
-        <input type="checkbox" id="colorR" value="R" checked>
-        <span class="color-icon">R</span>
-      </label>
-      <label class="color-checkbox green">
-        <input type="checkbox" id="colorG" value="G" checked>
-        <span class="color-icon">G</span>
-      </label>
-      <label class="color-checkbox colorless">
-        <input type="checkbox" id="colorC" value="C" checked>
-        <span class="color-icon">C</span>
-      </label>
+  <div id="filter-container" class="filter-container" style="display:none;">
+    <div class="set-filter">
+      <label for="setSelect">Filter by Set:</label>
+      <select id="setSelect" class="setDropdown" style="width:100%;max-width:90%;">
+        <option value="">All Sets</option>
+      </select>
     </div>
 
-    <div class="game-area">
-      <div class="left-panel">
-        <div id="card-wrapper" class="card-container"></div>
-      </div>
-
-      <div class="center-panel">
-        <div class="action-buttons">
-          <button onclick="undoGuess()">Undo</button>
-          <button onclick="clearGuess()">Clear</button>
-          <button onclick="submitGuess()" id="guessButton">Guess</button>
-        </div>
-        <div class="guess-display" id="guessDisplay"></div>
-        <div id="message"></div>
-      </div>
-
-      <div class="right-panel">
-        <div id="mana-buttons"></div>
+    <div class="color-filter">
+      <div class="color-checkboxes">
+        <label class="color-checkbox white">
+          <input type="checkbox" id="colorW" value="W" checked>
+          <span class="color-icon">W</span>
+        </label>
+        <label class="color-checkbox blue">
+          <input type="checkbox" id="colorU" value="U" checked>
+          <span class="color-icon">U</span>
+        </label>
+        <label class="color-checkbox black">
+          <input type="checkbox" id="colorB" value="B" checked>
+          <span class="color-icon">B</span>
+        </label>
+        <label class="color-checkbox red">
+          <input type="checkbox" id="colorR" value="R" checked>
+          <span class="color-icon">R</span>
+        </label>
+        <label class="color-checkbox green">
+          <input type="checkbox" id="colorG" value="G" checked>
+          <span class="color-icon">G</span>
+        </label>
+        <label class="color-checkbox colorless">
+          <input type="checkbox" id="colorC" value="C" checked>
+          <span class="color-icon">C</span>
+        </label>
       </div>
     </div>
 
+    <div style="text-align:center; margin-top:1.5rem;">
+      <button onclick="resetFilters()" class="filter-toggle-btn" style="font-size:0.85rem; padding:0.4rem 1rem;">
+        Reset to Default
+      </button>
+    </div>
+  </div>
+
+  <div class="game-area">
+    <div class="left-panel">
+      <div id="card-wrapper" class="card-container"></div>
+    </div>
+
+    <div class="center-panel">
+      <div class="action-buttons">
+        <button onclick="undoGuess()">Undo</button>
+        <button onclick="clearGuess()">Clear</button>
+        <button onclick="submitGuess()" id="guessButton">Guess</button>
+      </div>
+      <div class="guess-display" id="guessDisplay"></div>
+      <div id="message"></div>
+    </div>
+
+    <div class="right-panel">
+      <div id="mana-buttons"></div>
+    </div>
+  </div>
 
 
 
-    <script>
-      window.onload = () => {
-        loadSets();
-        loadCard();
-        renderManaButtons();
-        document.getElementById("setSelect").addEventListener("change", resetGameOnSetChange);
 
-        // Add event listeners for color filter checkboxes
-        document.querySelectorAll('.color-checkbox input').forEach(checkbox => {
-          checkbox.addEventListener('change', resetGameOnSetChange);
-        });
-      };
-
-      function getSelectedColors() {
-        const colors = [];
-
-        // Build the color string for c<= syntax
-        if (document.getElementById('colorW').checked) colors.push('W');
-        if (document.getElementById('colorU').checked) colors.push('U');
-        if (document.getElementById('colorB').checked) colors.push('B');
-        if (document.getElementById('colorR').checked) colors.push('R');
-        if (document.getElementById('colorG').checked) colors.push('G');
-
-        const includeColorless = document.getElementById('colorC').checked;
-
-        // If all 5 colors are selected and colorless too, no filter needed
-        if (colors.length === 5 && includeColorless) {
-          return '';
-        }
-
-        // Build the query using c<= syntax
-        // c<=UB means cards that are U, B, or UB (at most these colors)
-        let query = '';
-
-        if (colors.length > 0) {
-          query = 'c<=' + colors.join('');
-          // Explicitly exclude colorless if not checked (c<= includes colorless by default)
-          if (!includeColorless) {
-            query += ' -c:C';
-          }
-        }
-
-        // Handle colorless separately
-        if (includeColorless && colors.length === 0) {
-          // Only colorless selected
-          query = 'c:C';
-        } else if (includeColorless && colors.length > 0) {
-          // Colors + colorless: use OR to include colorless cards too
-          query = '(' + query + ' OR c:C)';
-        } else if (!includeColorless && colors.length === 0) {
-          // Nothing selected - return empty (will show all)
-          return '';
-        }
-
-        return query;
-      }
-      async function loadSets() {
-        const res = await fetch("/get_sets");
-        const sets = await res.json();
-
-        const select = document.getElementById("setSelect");
-        sets.forEach(s => {
-          const option = document.createElement("option");
-          option.value = s.code;
-          option.textContent = `${s.name} (${s.code.toUpperCase()})`;
-          select.appendChild(option);
-        });
-      }
+  <script>
+    window.onload = () => {
+      loadSets();
+      loadCard();
+      renderManaButtons();
       document.getElementById("setSelect").addEventListener("change", resetGameOnSetChange);
-      async function resetGameOnSetChange() {
-        await fetch("/reset_game", { method: "POST" });
 
-        document.getElementById("lives").textContent = "3";
-        document.getElementById("score").textContent = "0";
-        document.getElementById("message").textContent = "New filter selected — game restarting!";
-        currentGuess = [];
-        renderGuess();
+      // Add event listeners for color filter checkboxes
+      document.querySelectorAll('.color-checkbox input').forEach(checkbox => {
+        checkbox.addEventListener('change', resetGameOnSetChange);
+      });
+    };
 
-        loadCard();
+    function getSelectedColors() {
+      const colors = [];
+
+      // Build the color string for c<= syntax
+      if (document.getElementById('colorW').checked) colors.push('W');
+      if (document.getElementById('colorU').checked) colors.push('U');
+      if (document.getElementById('colorB').checked) colors.push('B');
+      if (document.getElementById('colorR').checked) colors.push('R');
+      if (document.getElementById('colorG').checked) colors.push('G');
+
+      const includeColorless = document.getElementById('colorC').checked;
+
+      // If all 5 colors are selected and colorless too, no filter needed
+      if (colors.length === 5 && includeColorless) {
+        return '';
       }
 
+      // Build the query using c<= syntax
+      // c<=UB means cards that are U, B, or UB (at most these colors)
+      let query = '';
 
-      const manaSymbols = [
-        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-        "W", "U", "B", "R", "G",
-        "WU", "WB", "UB", "UR", "BR", "BG", "RG", "RW", "GW", "GU",
-        "CW", "CU", "CB", "CR", "CG",
-        "2W", "2U", "2B", "2R", "2G",
-        "RGP", "GWP", "RWP", "GUP",
-        "WP", "UP", "BP", "RP", "GP",
-        "C", "X"
-      ];
-
-      let currentGuess = [];
-      let buttonsDisabled = false;
-      let gameOver = false;
-
-      function renderManaCost(manaCost) {
-        if (!manaCost) return "";
-
-        const symbols = manaCost.match(/\{.*?\}/g) || [];
-        return symbols
-          .map(sym => {
-            const clean = sym.replace(/[{}]/g, "");
-            const url = `https://svgs.scryfall.io/card-symbols/${clean}.svg`;
-            return `<img src="${url}" class="mana-symbol" title="${sym}">`;
-          })
-          .join("");
+      if (colors.length > 0) {
+        query = 'c<=' + colors.join('');
+        // Explicitly exclude colorless if not checked (c<= includes colorless by default)
+        if (!includeColorless) {
+          query += ' -c:C';
+        }
       }
 
-      function renderGuess() {
-        const display = document.getElementById("guessDisplay");
-
-        display.innerHTML = currentGuess
-          .map(sym => `<img src="https://svgs.scryfall.io/card-symbols/${sym}.svg" class="mana-symbol">`)
-          .join("");
+      // Handle colorless separately
+      if (includeColorless && colors.length === 0) {
+        // Only colorless selected
+        query = 'c:C';
+      } else if (includeColorless && colors.length > 0) {
+        // Colors + colorless: use OR to include colorless cards too
+        query = '(' + query + ' OR c:C)';
+      } else if (!includeColorless && colors.length === 0) {
+        // Nothing selected - return empty (will show all)
+        return '';
       }
 
-      function addSymbol(sym) {
-        if (buttonsDisabled) return;
-        currentGuess.push(sym);
-        renderGuess();
-      }
+      return query;
+    }
+    function toggleFilters() {
+      const container = document.getElementById('filter-container');
+      const btn = document.getElementById('filter-toggle');
 
-      function undoGuess() {
-        if (buttonsDisabled) return;
-        currentGuess.pop();
-        renderGuess();
+      if (container.style.display === 'none') {
+        container.style.display = 'block';
+        // Active state styles
+        btn.style.background = 'rgba(97, 218, 251, 0.15)';
+        btn.style.borderColor = 'rgba(97, 218, 251, 0.4)';
+        btn.style.color = '#fff';
+      } else {
+        container.style.display = 'none';
+        // Reset styles
+        btn.style.background = '';
+        btn.style.borderColor = '';
+        btn.style.color = '';
       }
+    }
 
-      function clearGuess() {
-        if (buttonsDisabled) return;
-        currentGuess = [];
-        renderGuess();
-      }
+    function resetFilters() {
+      // Reset set selection
+      document.getElementById('setSelect').value = "";
 
-      function renderManaButtons() {
-        const container = document.getElementById("mana-buttons");
-        container.innerHTML = manaSymbols
-          .map(sym => `
+      // Reset color checkboxes to all checked
+      document.querySelectorAll('.color-checkbox input').forEach(checkbox => {
+        checkbox.checked = true;
+      });
+
+      // Trigger game reset
+      resetGameOnSetChange();
+    }
+
+    async function loadSets() {
+      const res = await fetch("/get_sets");
+      const sets = await res.json();
+
+      const select = document.getElementById("setSelect");
+      sets.forEach(s => {
+        const option = document.createElement("option");
+        option.value = s.code;
+        option.textContent = `${s.name} (${s.code.toUpperCase()})`;
+        select.appendChild(option);
+      });
+    }
+    document.getElementById("setSelect").addEventListener("change", resetGameOnSetChange);
+    async function resetGameOnSetChange() {
+      await fetch("/reset_game", { method: "POST" });
+
+      document.getElementById("lives").textContent = "3";
+      document.getElementById("score").textContent = "0";
+      document.getElementById("message").textContent = "New filter selected — game restarting!";
+      currentGuess = [];
+      renderGuess();
+
+      loadCard();
+    }
+
+
+    const manaSymbols = [
+      "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+      "W", "U", "B", "R", "G",
+      "WU", "WB", "UB", "UR", "BR", "BG", "RG", "RW", "GW", "GU",
+      "CW", "CU", "CB", "CR", "CG",
+      "2W", "2U", "2B", "2R", "2G",
+      "RGP", "GWP", "RWP", "GUP",
+      "WP", "UP", "BP", "RP", "GP",
+      "C", "X"
+    ];
+
+    let currentGuess = [];
+    let buttonsDisabled = false;
+    let gameOver = false;
+
+    function renderManaCost(manaCost) {
+      if (!manaCost) return "";
+
+      const symbols = manaCost.match(/\{.*?\}/g) || [];
+      return symbols
+        .map(sym => {
+          const clean = sym.replace(/[{}]/g, "");
+          const url = `https://svgs.scryfall.io/card-symbols/${clean}.svg`;
+          return `<img src="${url}" class="mana-symbol" title="${sym}">`;
+        })
+        .join("");
+    }
+
+    function renderGuess() {
+      const display = document.getElementById("guessDisplay");
+
+      display.innerHTML = currentGuess
+        .map(sym => `<img src="https://svgs.scryfall.io/card-symbols/${sym}.svg" class="mana-symbol">`)
+        .join("");
+    }
+
+    function addSymbol(sym) {
+      if (buttonsDisabled) return;
+      currentGuess.push(sym);
+      renderGuess();
+    }
+
+    function undoGuess() {
+      if (buttonsDisabled) return;
+      currentGuess.pop();
+      renderGuess();
+    }
+
+    function clearGuess() {
+      if (buttonsDisabled) return;
+      currentGuess = [];
+      renderGuess();
+    }
+
+    function renderManaButtons() {
+      const container = document.getElementById("mana-buttons");
+      container.innerHTML = manaSymbols
+        .map(sym => `
           <img src="https://svgs.scryfall.io/card-symbols/${sym}.svg" 
                class="mana-symbol" 
                title="${sym}" 
                onclick="addSymbol('${sym}')">
         `).join("");
-      }
+    }
 
-      async function loadCard() {
-        const selectedSet = document.getElementById("setSelect").value;
-        const selectedColors = getSelectedColors();
-        const cardWrapper = document.getElementById("card-wrapper");
+    async function loadCard() {
+      const selectedSet = document.getElementById("setSelect").value;
+      const selectedColors = getSelectedColors();
+      const cardWrapper = document.getElementById("card-wrapper");
 
-        // Show loading state
-        cardWrapper.classList.add("loading");
-        cardWrapper.innerHTML = "";
+      // Show loading state
+      cardWrapper.classList.add("loading");
+      cardWrapper.innerHTML = "";
 
-        let url = "/get_card";
-        const params = [];
-        if (selectedSet) params.push("set=" + encodeURIComponent(selectedSet));
-        if (selectedColors) params.push("colors=" + encodeURIComponent(selectedColors));
-        if (params.length > 0) url += "?" + params.join("&");
+      let url = "/get_card";
+      const params = [];
+      if (selectedSet) params.push("set=" + encodeURIComponent(selectedSet));
+      if (selectedColors) params.push("colors=" + encodeURIComponent(selectedColors));
+      if (params.length > 0) url += "?" + params.join("&");
 
-        const res = await fetch(url);
-        const card = await res.json();
+      const res = await fetch(url);
+      const card = await res.json();
 
-        const manaIcons = renderManaCost(card.mana_cost);
+      const manaIcons = renderManaCost(card.mana_cost);
 
-        // Create image element and wait for it to load
-        if (card.image) {
-          const img = new Image();
-          img.src = card.image;
-          img.className = "card-image";
-          img.alt = card.name;
+      // Create image element and wait for it to load
+      if (card.image) {
+        const img = new Image();
+        img.src = card.image;
+        img.className = "card-image";
+        img.alt = card.name;
 
-          img.onload = () => {
-            cardWrapper.classList.remove("loading");
-            cardWrapper.innerHTML = "";
-            cardWrapper.appendChild(img);
-
-            const manaOverlay = document.createElement("div");
-            manaOverlay.id = "mana_symbol";
-            manaOverlay.className = "hide-mana-cost";
-            cardWrapper.appendChild(manaOverlay);
-          };
-
-          img.onerror = () => {
-            cardWrapper.classList.remove("loading");
-            cardWrapper.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">Failed to load card</div>`;
-          };
-        } else {
+        img.onload = () => {
           cardWrapper.classList.remove("loading");
-          cardWrapper.innerHTML = `<div id="mana_symbol" class="hide-mana-cost"></div>`;
+          cardWrapper.innerHTML = "";
+          cardWrapper.appendChild(img);
+
+          const manaOverlay = document.createElement("div");
+          manaOverlay.id = "mana_symbol";
+          manaOverlay.className = "hide-mana-cost";
+          cardWrapper.appendChild(manaOverlay);
+        };
+
+        img.onerror = () => {
+          cardWrapper.classList.remove("loading");
+          cardWrapper.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">Failed to load card</div>`;
+        };
+      } else {
+        cardWrapper.classList.remove("loading");
+        cardWrapper.innerHTML = `<div id="mana_symbol" class="hide-mana-cost"></div>`;
+      }
+
+      document.getElementById("message").textContent = "";
+      clearGuess();
+      enableAllButtons();
+      hideNextButton();
+      gameOver = false;
+    }
+
+    function renderManaIconsFromCost(manaCost) {
+      if (!manaCost) return "(No mana cost)";
+
+      const symbols = manaCost.match(/\{.*?\}/g) || [];
+      return symbols
+        .map(sym => {
+          const clean = sym.replace(/[{}]/g, "").replace("/", "");
+          const url = `https://svgs.scryfall.io/card-symbols/${clean}.svg`;
+          return `<img src="${url}" class="mana-symbol" title="${sym}">`;
+        })
+        .join("");
+    }
+
+    async function submitGuess() {
+      if (buttonsDisabled) return;
+      disableAllButtons();
+
+      const guess = currentGuess.length > 0
+        ? currentGuess.map(sym => `{${sym}}`).join("")
+        : "";
+
+      const res = await fetch("/guess", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guess })
+      });
+      document.getElementById("mana_symbol").className = 'show-mana-cost';
+      const result = await res.json();
+
+      // Show the result message
+      document.getElementById("message").textContent = result.message;
+      document.getElementById("lives").textContent = result.lives;
+      document.getElementById("score").textContent = result.score;
+      // Clear the previous guess and display the correct mana cost as SVGs
+      currentGuess = [];
+      renderGuess();
+      document.getElementById("message").innerHTML += renderManaIconsFromCost(result.correct_cost || guess);
+
+      if (result.game_over) {
+        document.getElementById("message").textContent += "Game Over!";
+        document.getElementById("message").innerHTML += renderManaIconsFromCost(result.correct_cost || guess);
+        gameOver = true;
+      }
+
+      showNextButton();
+    }
+
+    function showNextButton() {
+      hideNextButton();
+      const nextBtn = document.createElement("button");
+      nextBtn.textContent = gameOver ? "Restart Game" : "Next Card";
+      nextBtn.id = "nextButton";
+      nextBtn.onclick = async () => {
+        nextBtn.remove();
+        if (gameOver) {
+          await resetGame();
         }
-
-        document.getElementById("message").textContent = "";
-        clearGuess();
-        enableAllButtons();
-        hideNextButton();
-        gameOver = false;
-      }
-
-      function renderManaIconsFromCost(manaCost) {
-        if (!manaCost) return "(No mana cost)";
-
-        const symbols = manaCost.match(/\{.*?\}/g) || [];
-        return symbols
-          .map(sym => {
-            const clean = sym.replace(/[{}]/g, "").replace("/", "");
-            const url = `https://svgs.scryfall.io/card-symbols/${clean}.svg`;
-            return `<img src="${url}" class="mana-symbol" title="${sym}">`;
-          })
-          .join("");
-      }
-
-      async function submitGuess() {
-        if (buttonsDisabled) return;
-        disableAllButtons();
-
-        const guess = currentGuess.length > 0
-          ? currentGuess.map(sym => `{${sym}}`).join("")
-          : "";
-
-        const res = await fetch("/guess", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ guess })
-        });
-        document.getElementById("mana_symbol").className = 'show-mana-cost';
-        const result = await res.json();
-
-        // Show the result message
-        document.getElementById("message").textContent = result.message;
-        document.getElementById("lives").textContent = result.lives;
-        document.getElementById("score").textContent = result.score;
-        // Clear the previous guess and display the correct mana cost as SVGs
+        loadCard();
         currentGuess = [];
         renderGuess();
-        document.getElementById("message").innerHTML += renderManaIconsFromCost(result.correct_cost || guess);
+      };
+      document.getElementById("message").appendChild(nextBtn);
+    }
 
-        if (result.game_over) {
-          document.getElementById("message").textContent += " 💀 Game Over!";
-          document.getElementById("message").innerHTML += renderManaIconsFromCost(result.correct_cost || guess);
-          gameOver = true;
-        }
+    function hideNextButton() {
+      const btn = document.getElementById("nextButton");
+      if (btn) btn.remove();
+    }
 
-        showNextButton();
-      }
+    async function resetGame() {
+      const res = await fetch("/reset", { method: "POST" });
+      const result = await res.json();
+      document.getElementById("lives").textContent = result.lives;
+      document.getElementById("score").textContent = result.score;
+      document.getElementById("message").textContent = "Game restarted! Try again!";
+    }
 
-      function showNextButton() {
-        hideNextButton();
-        const nextBtn = document.createElement("button");
-        nextBtn.textContent = gameOver ? "Restart Game 🔄" : "Next Card ➡️";
-        nextBtn.id = "nextButton";
-        nextBtn.onclick = async () => {
-          nextBtn.remove();
-          if (gameOver) {
-            await resetGame();
-          }
-          loadCard();
-          currentGuess = [];
-          renderGuess();
-        };
-        document.getElementById("message").appendChild(nextBtn);
-      }
+    function disableAllButtons() {
+      buttonsDisabled = true;
+      document.querySelectorAll("button, .mana-symbol").forEach(el => el.style.pointerEvents = "none");
+      document.querySelectorAll("button").forEach(el => el.disabled = true);
+    }
 
-      function hideNextButton() {
-        const btn = document.getElementById("nextButton");
-        if (btn) btn.remove();
-      }
-
-      async function resetGame() {
-        const res = await fetch("/reset", { method: "POST" });
-        const result = await res.json();
-        document.getElementById("lives").textContent = result.lives;
-        document.getElementById("score").textContent = result.score;
-        document.getElementById("message").textContent = "Game restarted! Try again!";
-      }
-
-      function disableAllButtons() {
-        buttonsDisabled = true;
-        document.querySelectorAll("button, .mana-symbol").forEach(el => el.style.pointerEvents = "none");
-        document.querySelectorAll("button").forEach(el => el.disabled = true);
-      }
-
-      function enableAllButtons() {
-        buttonsDisabled = false;
-        document.querySelectorAll("button, .mana-symbol").forEach(el => el.style.pointerEvents = "auto");
-        document.querySelectorAll("button").forEach(el => el.disabled = false);
-      }
+    function enableAllButtons() {
+      buttonsDisabled = false;
+      document.querySelectorAll("button, .mana-symbol").forEach(el => el.style.pointerEvents = "auto");
+      document.querySelectorAll("button").forEach(el => el.disabled = false);
+    }
 
 
-    </script>
+  </script>
 </body>
 
 </html>
