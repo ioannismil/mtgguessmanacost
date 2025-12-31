@@ -21,10 +21,22 @@ def reset_game():
 @app.route("/get_card")
 def get_card():
     selected_set = request.args.get("set", "").lower().strip()
-    base_query="https://api.scryfall.com/cards/random?q=(-type%3Aland+-type%3Atoken+-is:mdfc+-is:adventure)"
+    colors_filter = request.args.get("colors", "").strip()
+    
+    # Build the Scryfall query
+    query_parts = ["-type:land", "-type:token", "-is:mdfc", "-is:adventure","games:paper"]
+    
     if selected_set:
-        base_query += f" set:{selected_set}"
-    response = requests.get(base_query)
+        query_parts.append(f"set:{selected_set}")
+    
+    if colors_filter:
+        # colors_filter will be something like "(c:U) -c:W -c:B -c:R -c:G -c:C"
+        query_parts.append(colors_filter)
+    
+    full_query = " ".join(query_parts)
+    print(f"DEBUG: Scryfall query: {full_query}")
+    
+    response = requests.get("https://api.scryfall.com/cards/random", params={"q": full_query})
     data = response.json()
 
     card = {
