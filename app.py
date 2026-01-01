@@ -33,7 +33,7 @@ def get_card():
     # game:paper (user requirement)
     # -is:funny (exclude un-sets unless requested)
     # has:mana_cost (exclude lands, suspend-only, etc)
-    query_parts = ["game:paper", "layout:normal", "has:mana_cost", "-is:funny"]
+    query_parts = ["game:paper", "layout:normal", "has:mana_cost", "-is:funny","-type:land", "-type:token", "-is:mdfc", "-is:adventure"]
     
     if selected_set:
         query_parts.append(f"set:{selected_set}")
