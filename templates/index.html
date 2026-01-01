@@ -522,6 +522,62 @@
       border-color: rgba(97, 218, 251, 0.5);
       color: #fff;
     }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background: #2c313c;
+      padding: 2rem;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      max-width: 500px;
+      width: 90%;
+      text-align: left;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    .shortcut-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .shortcut-item {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.2rem;
+    }
+
+    .key-badge {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: bold;
+      color: #fff;
+    }
   </style>
 </head>
 
@@ -532,7 +588,7 @@
   </div>
   <div id="stats">
     Lives: <span id="lives">{{ lives }}</span> &nbsp;&nbsp;|&nbsp;&nbsp; Score: <span id="score">{{ score
-      }}</span>
+      }}</span> &nbsp;&nbsp;|&nbsp;&nbsp; Streak: <span id="streak">{{ streak }}</span>
   </div>
   <button id="filter-toggle" class="filter-toggle-btn" onclick="toggleFilters()">
     Game Settings & Filters
@@ -609,10 +665,34 @@
       </div>
     </div>
 
-    <div style="text-align:center; margin-top:1.5rem;">
+    <div style="text-align:center; margin-top:1.5rem; display:flex; gap:10px; justify-content:center;">
       <button onclick="resetFilters()" class="filter-toggle-btn" style="font-size:0.85rem; padding:0.4rem 1rem;">
         Reset to Default
       </button>
+      <button onclick="document.getElementById('shortcuts-modal').style.display='flex'" class="filter-toggle-btn"
+        style="font-size:1.2rem; padding:0.4rem 0.8rem;" title="Show Keyboard Shortcuts">
+        !
+      </button>
+    </div>
+  </div>
+
+  <div id="shortcuts-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-title">⌨️ Keyboard Shortcuts</div>
+      <div class="shortcut-list">
+        <div class="shortcut-item"><span>White</span> <span class="key-badge">W</span></div>
+        <div class="shortcut-item"><span>Blue</span> <span class="key-badge">U</span></div>
+        <div class="shortcut-item"><span>Black</span> <span class="key-badge">B</span></div>
+        <div class="shortcut-item"><span>Red</span> <span class="key-badge">R</span></div>
+        <div class="shortcut-item"><span>Green</span> <span class="key-badge">G</span></div>
+        <div class="shortcut-item"><span>Colorless</span> <span class="key-badge">C</span></div>
+        <div class="shortcut-item"><span>Generic</span> <span class="key-badge">0-9</span></div>
+        <div class="shortcut-item"><span>Submit / Next</span> <span class="key-badge">Enter</span></div>
+        <div class="shortcut-item"><span>Undo</span> <span class="key-badge">Backspace</span></div>
+      </div>
+      <div style="text-align:center;">
+        <button onclick="closeModal()" style="width:100%;">Got it!</button>
+      </div>
     </div>
   </div>
 
@@ -650,11 +730,46 @@
       document.querySelectorAll('.color-checkbox input').forEach(checkbox => {
         checkbox.addEventListener('change', resetGameOnSetChange);
       });
-      // Add event listeners for format filter checkboxes
       document.querySelectorAll('.format-option').forEach(checkbox => {
         checkbox.addEventListener('change', resetGameOnSetChange);
       });
+
+      // Show shortcuts modal on first visit
+      if (!localStorage.getItem('shortcutsShown')) {
+        document.getElementById('shortcuts-modal').style.display = 'flex';
+        localStorage.setItem('shortcutsShown', 'true');
+      }
     };
+
+    function closeModal() {
+      document.getElementById('shortcuts-modal').style.display = 'none';
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (document.getElementById('filter-container').style.display !== 'none') return;
+
+      const key = e.key.toUpperCase();
+
+      // Mana symbols
+      if (['W', 'U', 'B', 'R', 'G', 'C', 'X'].includes(key)) {
+        addSymbol(key);
+      } else if (key >= '0' && key <= '9') {
+        addSymbol(key);
+      }
+
+      // Actions
+      if (e.key === 'Backspace') undoGuess();
+      if (e.key === 'Enter') {
+        const nextBtn = document.getElementById("nextButton");
+        if (nextBtn) {
+          nextBtn.click();
+        } else {
+          submitGuess();
+        }
+      }
+    });
+
 
     function getSelectedFormats() {
       const selected = [];
@@ -762,6 +877,7 @@
 
       document.getElementById("lives").textContent = "3";
       document.getElementById("score").textContent = "0";
+      document.getElementById("streak").textContent = "0";
       document.getElementById("message").textContent = "New filter selected — game restarting!";
       currentGuess = [];
       renderGuess();
@@ -955,6 +1071,7 @@
       document.getElementById("message").textContent = result.message;
       document.getElementById("lives").textContent = result.lives;
       document.getElementById("score").textContent = result.score;
+      document.getElementById("streak").textContent = result.streak;
       // Clear the previous guess and display the correct mana cost as SVGs
       currentGuess = [];
       renderGuess();
@@ -967,6 +1084,9 @@
       }
 
       showNextButton();
+      if (result.scryfall_uri) {
+        addScryfallLink(result.scryfall_uri);
+      }
     }
 
     function showNextButton() {
@@ -996,7 +1116,26 @@
       const result = await res.json();
       document.getElementById("lives").textContent = result.lives;
       document.getElementById("score").textContent = result.score;
+      document.getElementById("streak").textContent = result.streak;
       document.getElementById("message").textContent = "Game restarted! Try again!";
+    }
+
+    function addScryfallLink(uri) {
+      if (!uri) return;
+      const btn = document.createElement("a");
+      btn.href = uri;
+      btn.target = "_blank";
+      btn.textContent = "View on Scryfall";
+      btn.style.display = "inline-block";
+      btn.style.marginLeft = "1rem";
+      btn.style.color = "#61dafb";
+      btn.style.textDecoration = "none";
+      btn.style.fontWeight = "bold";
+      btn.style.border = "1px solid #61dafb";
+      btn.style.padding = "0.4rem 0.8rem";
+      btn.style.borderRadius = "20px";
+
+      document.getElementById("message").appendChild(btn);
     }
 
     function disableAllButtons() {

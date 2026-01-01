@@ -10,12 +10,14 @@ def index():
     if "lives" not in session:
         session["lives"] = 3
         session["score"] = 0
-    return render_template("index.html", lives=session["lives"], score=session["score"])
+        session["streak"] = 0
+    return render_template("index.html", lives=session["lives"], score=session["score"], streak=session.get("streak", 0))
 
 @app.route("/reset_game", methods=["POST"])
 def reset_game():
     session["lives"] = 3
     session["score"] = 0
+    session["streak"] = 0
     return jsonify({"message": "Game restarting!"})
 
 @app.route("/get_card")
@@ -59,6 +61,9 @@ def get_card():
             "mana_cost": data.get("mana_cost", ""),  # e.g. "{1}{W}{U}"
         }
 
+        # Save Scryfall URI and mana cost to session
+        session["current_scryfall_uri"] = data.get("scryfall_uri", "")
+
         # Clean up for comparison
         session["current_mana_cost"] = card["mana_cost"].upper().replace(" ", "")
         return jsonify(card)
@@ -85,19 +90,24 @@ def guess():
     result = {}
     if user_guess == correct_cost:
         session["score"] += 1
+        session["streak"] = session.get("streak", 0) + 1
         result["correct"] = True
         result["message"] = "✅ Correct!"
     else:
         session["lives"] -= 1
+        session["streak"] = 0
         result["correct"] = False
         result["message"] = "❌ Wrong!"
 
     result["lives"] = session["lives"]
     result["score"] = session["score"]
+    result["streak"] = session.get("streak", 0)
     result["game_over"] = session["lives"] <= 0
 
     # Return the correct mana cost separately for frontend SVG rendering
+    # Return the correct mana cost and Scryfall URI
     result["correct_cost"] = correct_cost
+    result["scryfall_uri"] = session.get("current_scryfall_uri", "")
 
     return jsonify(result)
 
@@ -105,8 +115,9 @@ def guess():
 def reset():
     session["lives"] = 3
     session["score"] = 0
+    session["streak"] = 0
     session["current_card"] = None
-    return jsonify({"message": "Game reset", "lives": session["lives"], "score": session["score"]})
+    return jsonify({"message": "Game reset", "lives": session["lives"], "score": session["score"], "streak": session["streak"]})
 
 
 if __name__ == "__main__":
