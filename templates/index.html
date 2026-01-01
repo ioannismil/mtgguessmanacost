@@ -879,6 +879,7 @@
       document.getElementById("score").textContent = "0";
       document.getElementById("streak").textContent = "0";
       document.getElementById("message").textContent = "New filter selected — game restarting!";
+      preloadedCardPromise = null;
       currentGuess = [];
       renderGuess();
 
@@ -900,6 +901,59 @@
     let currentGuess = [];
     let buttonsDisabled = false;
     let gameOver = false;
+    let preloadedCardPromise = null;
+
+    async function fetchCardData() {
+      if (preloadedCardPromise) {
+        const data = await preloadedCardPromise;
+        preloadedCardPromise = null;
+        return data;
+      }
+
+      const selectedSet = document.getElementById("setSelect").value;
+      const selectedColors = getSelectedColors();
+
+      let url = "/get_card";
+      const params = [];
+      if (selectedSet) params.push("set=" + encodeURIComponent(selectedSet));
+      if (selectedColors) params.push("colors=" + encodeURIComponent(selectedColors));
+
+      const selectedFormats = getSelectedFormats();
+      if (selectedFormats) params.push("formats=" + encodeURIComponent(selectedFormats));
+
+      if (params.length > 0) url += "?" + params.join("&");
+
+      const res = await fetch(url);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw { status: res.status, message: errData.error || "Error fetching card" };
+      }
+      return await res.json();
+    }
+
+    function startPreload() {
+      preloadedCardPromise = (async () => {
+        const selectedSet = document.getElementById("setSelect").value;
+        const selectedColors = getSelectedColors();
+
+        let url = "/get_card";
+        const params = [];
+        if (selectedSet) params.push("set=" + encodeURIComponent(selectedSet));
+        if (selectedColors) params.push("colors=" + encodeURIComponent(selectedColors));
+
+        const selectedFormats = getSelectedFormats();
+        if (selectedFormats) params.push("formats=" + encodeURIComponent(selectedFormats));
+
+        if (params.length > 0) url += "?" + params.join("&");
+
+        const res = await fetch(url);
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw { status: res.status, message: errData.error || "Error fetching card" };
+        }
+        return await res.json();
+      })();
+    }
 
     function renderManaCost(manaCost) {
       if (!manaCost) return "";
@@ -952,29 +1006,51 @@
     }
 
     async function loadCard() {
-      const selectedSet = document.getElementById("setSelect").value;
-      const selectedColors = getSelectedColors();
       const cardWrapper = document.getElementById("card-wrapper");
 
       // Show loading state
       cardWrapper.classList.add("loading");
       cardWrapper.innerHTML = "";
 
-      let url = "/get_card";
-      const params = [];
-      if (selectedSet) params.push("set=" + encodeURIComponent(selectedSet));
-      if (selectedColors) params.push("colors=" + encodeURIComponent(selectedColors));
+      try {
+        const card = await fetchCardData();
 
-      const selectedFormats = getSelectedFormats();
-      if (selectedFormats) params.push("formats=" + encodeURIComponent(selectedFormats));
+        const manaIcons = renderManaCost(card.mana_cost);
 
-      if (params.length > 0) url += "?" + params.join("&");
+        // Create image element and wait for it to load
+        if (card.image) {
+          const img = new Image();
+          img.src = card.image;
+          img.className = "card-image";
+          img.alt = card.name;
 
-      const res = await fetch(url);
+          img.onload = () => {
+            cardWrapper.classList.remove("loading");
+            cardWrapper.innerHTML = "";
+            cardWrapper.appendChild(img);
 
-      if (!res.ok) {
-        // Handle error (e.g. 404 from our backend)
-        const errData = await res.json().catch(() => ({}));
+            const manaOverlay = document.createElement("div");
+            manaOverlay.id = "mana_symbol";
+            manaOverlay.className = "hide-mana-cost";
+            cardWrapper.appendChild(manaOverlay);
+          };
+
+          img.onerror = () => {
+            cardWrapper.classList.remove("loading");
+            cardWrapper.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">Failed to load card</div>`;
+          };
+        } else {
+          cardWrapper.classList.remove("loading");
+          cardWrapper.innerHTML = `<div id="mana_symbol" class="hide-mana-cost"></div>`;
+        }
+
+        document.getElementById("message").textContent = "";
+        clearGuess();
+        enableAllButtons();
+        hideNextButton();
+        gameOver = false;
+
+      } catch (err) {
         cardWrapper.classList.remove("loading");
         cardWrapper.innerHTML = `
           <div style="
@@ -992,50 +1068,12 @@
           ">
             <div style="font-size:3rem; margin-bottom:0.5rem;">⚠️</div>
             <div style="font-weight:bold; font-size:1.1rem; margin-bottom:0.5rem;">No Cards Found</div>
-            <div style="font-size:0.9rem; color:#ccc;">${errData.error || "Please adjust your filters and try again."}</div>
+            <div style="font-size:0.9rem; color:#ccc;">${err.message || "Please adjust your filters and try again."}</div>
           </div>
         `;
         document.getElementById("message").textContent = "Please change your filters.";
         disableAllButtons();
-        return;
       }
-
-      const card = await res.json();
-
-      const manaIcons = renderManaCost(card.mana_cost);
-
-      // Create image element and wait for it to load
-      if (card.image) {
-        const img = new Image();
-        img.src = card.image;
-        img.className = "card-image";
-        img.alt = card.name;
-
-        img.onload = () => {
-          cardWrapper.classList.remove("loading");
-          cardWrapper.innerHTML = "";
-          cardWrapper.appendChild(img);
-
-          const manaOverlay = document.createElement("div");
-          manaOverlay.id = "mana_symbol";
-          manaOverlay.className = "hide-mana-cost";
-          cardWrapper.appendChild(manaOverlay);
-        };
-
-        img.onerror = () => {
-          cardWrapper.classList.remove("loading");
-          cardWrapper.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">Failed to load card</div>`;
-        };
-      } else {
-        cardWrapper.classList.remove("loading");
-        cardWrapper.innerHTML = `<div id="mana_symbol" class="hide-mana-cost"></div>`;
-      }
-
-      document.getElementById("message").textContent = "";
-      clearGuess();
-      enableAllButtons();
-      hideNextButton();
-      gameOver = false;
     }
 
     function renderManaIconsFromCost(manaCost) {
@@ -1086,6 +1124,11 @@
       showNextButton();
       if (result.scryfall_uri) {
         addScryfallLink(result.scryfall_uri);
+      }
+
+      // Preload next card if game is not over
+      if (!result.game_over) {
+        startPreload();
       }
     }
 
