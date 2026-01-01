@@ -464,6 +464,64 @@
         transform: translateY(0);
       }
     }
+
+    .format-filter {
+      margin: 1.5rem 0 0.75rem 0;
+      padding: 0 0.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 1rem;
+    }
+
+    .format-filter>label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+
+    .format-checkboxes {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .format-checkbox {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .format-checkbox input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .format-label {
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      color: #aaa;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .format-checkbox input:checked+.format-label {
+      background: rgba(97, 218, 251, 0.2);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 8px rgba(97, 218, 251, 0.3);
+    }
+
+    .format-checkbox:hover .format-label {
+      border-color: rgba(97, 218, 251, 0.5);
+      color: #fff;
+    }
   </style>
 </head>
 
@@ -517,6 +575,40 @@
       </div>
     </div>
 
+    <div class="format-filter">
+      <label>Filter by Format (Legal in at least one):</label>
+      <div class="format-checkboxes">
+        <label class="format-checkbox">
+          <input type="checkbox" class="format-option" value="standard">
+          <span class="format-label">Standard</span>
+        </label>
+        <label class="format-checkbox">
+          <input type="checkbox" class="format-option" value="pioneer">
+          <span class="format-label">Pioneer</span>
+        </label>
+        <label class="format-checkbox">
+          <input type="checkbox" class="format-option" value="modern">
+          <span class="format-label">Modern</span>
+        </label>
+        <label class="format-checkbox">
+          <input type="checkbox" class="format-option" value="legacy">
+          <span class="format-label">Legacy</span>
+        </label>
+        <label class="format-checkbox">
+          <input type="checkbox" class="format-option" value="vintage">
+          <span class="format-label">Vintage</span>
+        </label>
+        <label class="format-checkbox">
+          <input type="checkbox" class="format-option" value="commander">
+          <span class="format-label">Commander</span>
+        </label>
+        <label class="format-checkbox">
+          <input type="checkbox" class="format-option" value="pauper">
+          <span class="format-label">Pauper</span>
+        </label>
+      </div>
+    </div>
+
     <div style="text-align:center; margin-top:1.5rem;">
       <button onclick="resetFilters()" class="filter-toggle-btn" style="font-size:0.85rem; padding:0.4rem 1rem;">
         Reset to Default
@@ -558,7 +650,19 @@
       document.querySelectorAll('.color-checkbox input').forEach(checkbox => {
         checkbox.addEventListener('change', resetGameOnSetChange);
       });
+      // Add event listeners for format filter checkboxes
+      document.querySelectorAll('.format-option').forEach(checkbox => {
+        checkbox.addEventListener('change', resetGameOnSetChange);
+      });
     };
+
+    function getSelectedFormats() {
+      const selected = [];
+      document.querySelectorAll('.format-option:checked').forEach(cb => {
+        selected.push(cb.value);
+      });
+      return selected.join(',');
+    }
 
     function getSelectedColors() {
       const colors = [];
@@ -629,6 +733,11 @@
       // Reset color checkboxes to all checked
       document.querySelectorAll('.color-checkbox input').forEach(checkbox => {
         checkbox.checked = true;
+      });
+
+      // Reset format checkboxes to none checked
+      document.querySelectorAll('.format-option').forEach(checkbox => {
+        checkbox.checked = false;
       });
 
       // Trigger game reset
@@ -739,9 +848,42 @@
       const params = [];
       if (selectedSet) params.push("set=" + encodeURIComponent(selectedSet));
       if (selectedColors) params.push("colors=" + encodeURIComponent(selectedColors));
+
+      const selectedFormats = getSelectedFormats();
+      if (selectedFormats) params.push("formats=" + encodeURIComponent(selectedFormats));
+
       if (params.length > 0) url += "?" + params.join("&");
 
       const res = await fetch(url);
+
+      if (!res.ok) {
+        // Handle error (e.g. 404 from our backend)
+        const errData = await res.json().catch(() => ({}));
+        cardWrapper.classList.remove("loading");
+        cardWrapper.innerHTML = `
+          <div style="
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            height:100%;
+            padding:1rem;
+            color:#ff6b6b;
+            text-align:center;
+            border: 2px dashed #ff6b6b;
+            border-radius: 10px;
+            background: rgba(40, 0, 0, 0.3);
+          ">
+            <div style="font-size:3rem; margin-bottom:0.5rem;">⚠️</div>
+            <div style="font-weight:bold; font-size:1.1rem; margin-bottom:0.5rem;">No Cards Found</div>
+            <div style="font-size:0.9rem; color:#ccc;">${errData.error || "Please adjust your filters and try again."}</div>
+          </div>
+        `;
+        document.getElementById("message").textContent = "Please change your filters.";
+        disableAllButtons();
+        return;
+      }
+
       const card = await res.json();
 
       const manaIcons = renderManaCost(card.mana_cost);

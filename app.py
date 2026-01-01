@@ -22,6 +22,7 @@ def reset_game():
 def get_card():
     selected_set = request.args.get("set", "").lower().strip()
     colors_filter = request.args.get("colors", "").strip()
+    formats_filter = request.args.get("formats", "").strip()
     
     # Build the Scryfall query
     query_parts = ["-type:land", "-type:token", "-is:mdfc", "-is:adventure","games:paper"]
@@ -32,22 +33,38 @@ def get_card():
     if colors_filter:
         # colors_filter will be something like "(c:U) -c:W -c:B -c:R -c:G -c:C"
         query_parts.append(colors_filter)
+
+    if formats_filter:
+        # formats_filter will be a comma-separated list like "standard,modern"
+        # We want to construct: (legal:standard OR legal:modern)
+        f_list = [f.strip() for f in formats_filter.split(",") if f.strip()]
+        if f_list:
+            format_query = " OR ".join([f"legal:{f}" for f in f_list])
+            query_parts.append(f"({format_query})")
     
     full_query = " ".join(query_parts)
     print(f"DEBUG: Scryfall query: {full_query}")
     
     response = requests.get("https://api.scryfall.com/cards/random", params={"q": full_query})
-    data = response.json()
+    
+    if response.status_code != 200:
+        print(f"DEBUG: Scryfall API error: {response.text}")
+        return jsonify({"error": "No cards found matching your filters."}), 404
 
-    card = {
-        "name": data["name"],
-        "image": data["image_uris"]["normal"] if "image_uris" in data else None,
-        "mana_cost": data.get("mana_cost", ""),  # e.g. "{1}{W}{U}"
-    }
+    try:
+        data = response.json()
+        card = {
+            "name": data["name"],
+            "image": data["image_uris"]["normal"] if "image_uris" in data else None,
+            "mana_cost": data.get("mana_cost", ""),  # e.g. "{1}{W}{U}"
+        }
 
-    # Clean up for comparison
-    session["current_mana_cost"] = card["mana_cost"].upper().replace(" ", "")
-    return jsonify(card)
+        # Clean up for comparison
+        session["current_mana_cost"] = card["mana_cost"].upper().replace(" ", "")
+        return jsonify(card)
+    except Exception as e:
+        print(f"ERROR: Failed to parse card data: {e}")
+        return jsonify({"error": "Failed to process card data."}), 500
 
 @app.route("/get_sets")
 def get_sets():
