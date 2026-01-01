@@ -920,6 +920,7 @@
 
       const selectedFormats = getSelectedFormats();
       if (selectedFormats) params.push("formats=" + encodeURIComponent(selectedFormats));
+      params.push("ts=" + Date.now()); // Cache buster
 
       if (params.length > 0) url += "?" + params.join("&");
 
@@ -943,6 +944,7 @@
 
         const selectedFormats = getSelectedFormats();
         if (selectedFormats) params.push("formats=" + encodeURIComponent(selectedFormats));
+        params.push("ts=" + Date.now()); // Cache buster
 
         if (params.length > 0) url += "?" + params.join("&");
 
