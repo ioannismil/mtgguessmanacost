@@ -56,10 +56,19 @@ def get_card():
 
     try:
         data = response.json()
+        # Helper to get mana cost safely
+        mana_cost = data.get("mana_cost")
+        if mana_cost is None:
+            # Fallback to color_identity if mana_cost doesn't exist (e.g. DFCs)
+            if "color_identity" in data and data["color_identity"]:
+                mana_cost = f"{{{data['color_identity'][0]}}}"
+            else:
+                mana_cost = ""
+
         card = {
             "name": data["name"],
             "image": data["image_uris"]["normal"] if "image_uris" in data else None,
-            "mana_cost": data.get("mana_cost", ""),  # e.g. "{1}{W}{U}"
+            "mana_cost": mana_cost,
         }
 
         # Save Scryfall URI and mana cost to session
