@@ -27,8 +27,13 @@ def get_card():
     formats_filter = request.args.get("formats", "").strip()
     
     # Build the Scryfall query
-    query_parts = ["-type:land", "-type:token", "-is:mdfc", "-is:adventure","game:paper","-type:emblem","-type:conspiracy",
-    "-set:unk","-type:Battle","-set_type:memorabilia","-is:playtest","-type:plane"]
+    # Optimization: Use positive filters where possible. 
+    # layout:normal excludes tokens, planes, schemes, vanguards, split cards, adventures, etc. if we want standard cards. 
+    # But to be safe and get "cards you cast", we use:
+    # game:paper (user requirement)
+    # -is:funny (exclude un-sets unless requested)
+    # has:mana_cost (exclude lands, suspend-only, etc)
+    query_parts = ["game:paper", "layout:normal", "has:mana_cost", "-is:funny"]
     
     if selected_set:
         query_parts.append(f"set:{selected_set}")
@@ -56,10 +61,12 @@ def get_card():
 
     try:
         data = response.json()
+        
         # Helper to get mana cost safely
         mana_cost = data.get("mana_cost")
         if mana_cost is None:
-            # Fallback to color_identity if mana_cost doesn't exist (e.g. DFCs)
+            # Fallback to color_identity if mana_cost doesn't exist (e.g. DFCs if layout:normal failed to exclude them or we want them)
+            # note: layout:normal excludes DFCs usually, but just in case.
             if "color_identity" in data and data["color_identity"]:
                 mana_cost = f"{{{data['color_identity'][0]}}}"
             else:
