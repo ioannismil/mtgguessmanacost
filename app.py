@@ -27,7 +27,8 @@ def get_card():
     formats_filter = request.args.get("formats", "").strip()
     
     # Build the Scryfall query
-    query_parts = ["-type:land", "-type:token", "-is:mdfc", "-is:adventure","game:paper","-type:emblem","-type:conspiracy","-set:unk","-type:Battle","-set_type:memorabilia","-is:playtest"]
+    query_parts = ["-type:land", "-type:token", "-is:mdfc", "-is:adventure","game:paper","-type:emblem","-type:conspiracy",
+    "-set:unk","-type:Battle","-set_type:memorabilia","-is:playtest","-type:plane"]
     
     if selected_set:
         query_parts.append(f"set:{selected_set}")
