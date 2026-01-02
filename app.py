@@ -13,6 +13,10 @@ def index():
         session["streak"] = 0
     return render_template("index.html", lives=session["lives"], score=session["score"], streak=session.get("streak", 0))
 
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
 @app.route("/reset_game", methods=["POST"])
 def reset_game():
     session["lives"] = 3
