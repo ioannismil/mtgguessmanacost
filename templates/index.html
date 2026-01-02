@@ -578,6 +578,82 @@
       font-weight: bold;
       color: #fff;
     }
+
+    /* Session History Styles */
+    .history-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 8px;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .history-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .history-item.correct {
+      border-left: 4px solid #4caf50;
+    }
+
+    .history-item.incorrect {
+      border-left: 4px solid #f44336;
+    }
+
+    .history-card-thumb {
+      width: 40px;
+      height: 56px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 4px;
+      margin-right: 12px;
+      flex-shrink: 0;
+      background-color: #000;
+    }
+
+    .history-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      overflow: hidden;
+    }
+
+    .history-name {
+      font-weight: bold;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 4px;
+    }
+
+    .history-cost {
+      display: flex;
+      align-items: center;
+    }
+
+    .history-cost .mana-symbol {
+      width: 16px;
+      height: 16px;
+      margin: 1px;
+    }
+
+    .history-result {
+      font-size: 1.2rem;
+      margin-left: 10px;
+    }
   </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7728230912872054"
     crossorigin="anonymous"></script>
@@ -728,6 +804,13 @@
     </div>
   </div>
 
+  <div id="history-section" style="width:100%; max-width:1000px; margin: 2rem auto; padding: 0 1rem; display:none;">
+    <h3
+      style="color:var(--accent); border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem; margin-bottom:1rem;">
+      Session History</h3>
+    <div id="history-list" class="history-list"></div>
+  </div>
+
   <footer
     style="margin-top: 3rem; padding: 2rem; color: #666; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px solid rgba(255,255,255,0.05); width: 100%;">
     <div style="display: flex; gap: 20px;">
@@ -753,6 +836,8 @@
 
 
   <script>
+    let currentCardData = null;
+
     window.onload = () => {
       loadSets();
       loadCard();
@@ -914,6 +999,11 @@
       document.getElementById("message").textContent = "New filter selected — game restarting!";
       preloadedCardPromise = null;
       currentGuess = [];
+
+      // Clear history
+      document.getElementById("history-list").innerHTML = "";
+      document.getElementById("history-section").style.display = "none";
+
       renderGuess();
 
       loadCard();
@@ -1049,6 +1139,7 @@
 
       try {
         const card = await fetchCardData();
+        currentCardData = card; // Store for history
 
         const manaIcons = renderManaCost(card.mana_cost);
 
@@ -1145,6 +1236,12 @@
       document.getElementById("lives").textContent = result.lives;
       document.getElementById("score").textContent = result.score;
       document.getElementById("streak").textContent = result.streak;
+
+      // Update History
+      if (currentCardData) {
+        addToHistory(currentCardData, result.correct, result.correct_cost);
+      }
+
       // Clear the previous guess and display the correct mana cost as SVGs
       currentGuess = [];
       renderGuess();
@@ -1164,6 +1261,36 @@
       // Preload next card if game is not over
       if (!result.game_over) {
         startPreload();
+      }
+    }
+
+    function addToHistory(cardData, isCorrect, correctCost) {
+      const historySection = document.getElementById("history-section");
+      historySection.style.display = "block";
+      const historyList = document.getElementById("history-list");
+
+      const item = document.createElement("div");
+      item.className = "history-item " + (isCorrect ? "correct" : "incorrect");
+
+      const manaHTML = renderManaIconsFromCost(correctCost);
+
+      item.innerHTML = `
+         <div class="history-card-thumb" style="background-image: url('${cardData.image || ''}')"></div>
+         <div class="history-info">
+           <div class="history-name">${cardData.name}</div>
+           <div class="history-cost">${manaHTML}</div>
+         </div>
+         <div class="history-result">
+           ${isCorrect ? '✅' : '❌'}
+         </div>
+       `;
+
+      // Prepend to top
+      historyList.insertBefore(item, historyList.firstChild);
+
+      // Optional: limit to last 10
+      if (historyList.children.length > 10) {
+        historyList.removeChild(historyList.lastChild);
       }
     }
 
@@ -1196,6 +1323,10 @@
       document.getElementById("score").textContent = result.score;
       document.getElementById("streak").textContent = result.streak;
       document.getElementById("message").textContent = "Game restarted! Try again!";
+
+      // Clear history on full restart
+      document.getElementById("history-list").innerHTML = "";
+      document.getElementById("history-section").style.display = "none";
     }
 
     function addScryfallLink(uri) {
