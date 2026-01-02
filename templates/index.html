@@ -654,6 +654,17 @@
       font-size: 1.2rem;
       margin-left: 10px;
     }
+
+    #history-section {
+      width: 100%;
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7728230912872054"
     crossorigin="anonymous"></script>
@@ -804,11 +815,31 @@
     </div>
   </div>
 
-  <div id="history-section" style="width:100%; max-width:1000px; margin: 2rem auto; padding: 0 1rem; display:none;">
+  <div id="history-section" class="{% if not history %}hidden{% endif %}">
     <h3
       style="color:var(--accent); border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem; margin-bottom:1rem;">
       Session History</h3>
-    <div id="history-list" class="history-list"></div>
+    <div id="history-list" class="history-list">
+      {% for item in history %}
+      <div class="history-item {% if item.is_correct %}correct{% else %}incorrect{% endif %}">
+        <div class="history-card-thumb" style="background-image: url('{{ item.image }}')"></div>
+        <div class="history-info">
+          <div class="history-name">{{ item.name }}</div>
+          <div class="history-cost">
+            <!-- We need to render mana symbols from the cost string -->
+            <!-- Since renderManaIconsFromCost is JS, we can't easily do it in Jinja without a custom filter or JS post-processing.
+                  Simplest: Render raw cost and letting JS fix it, OR using a simple mapping.
+                  Better: Just render the cost text slightly differently or use a small script to replace it.
+                  Let's use a data attribute and run a script on load. -->
+            <span class="mana-cost-text" data-cost="{{ item.correct_cost }}">{{ item.correct_cost }}</span>
+          </div>
+        </div>
+        <div class="history-result">
+          {% if item.is_correct %}✅{% else %}❌{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
 
   <footer
@@ -842,6 +873,12 @@
       loadSets();
       loadCard();
       renderManaButtons();
+
+      // Render initial mana costs for history items
+      document.querySelectorAll('.mana-cost-text').forEach(el => {
+        el.innerHTML = renderManaIconsFromCost(el.dataset.cost);
+      });
+
       document.getElementById("setSelect").addEventListener("change", resetGameOnSetChange);
 
       // Add event listeners for color filter checkboxes
@@ -1000,13 +1037,17 @@
       preloadedCardPromise = null;
       currentGuess = [];
 
+      document.getElementById("message").textContent = "New filter selected — game restarting!";
+      preloadedCardPromise = null;
+      currentGuess = [];
+
       // Clear history
       document.getElementById("history-list").innerHTML = "";
       document.getElementById("history-section").style.display = "none";
 
       renderGuess();
 
-      loadCard();
+      loadCard(true);
     }
 
 
@@ -1026,8 +1067,8 @@
     let gameOver = false;
     let preloadedCardPromise = null;
 
-    async function fetchCardData() {
-      if (preloadedCardPromise) {
+    async function fetchCardData(forceNew = false) {
+      if (preloadedCardPromise && !forceNew) {
         const data = await preloadedCardPromise;
         preloadedCardPromise = null;
         return data;
@@ -1043,6 +1084,7 @@
 
       const selectedFormats = getSelectedFormats();
       if (selectedFormats) params.push("formats=" + encodeURIComponent(selectedFormats));
+      if (forceNew) params.push("new_card=true");
       params.push("ts=" + Date.now()); // Cache buster
 
       if (params.length > 0) url += "?" + params.join("&");
@@ -1067,6 +1109,7 @@
 
         const selectedFormats = getSelectedFormats();
         if (selectedFormats) params.push("formats=" + encodeURIComponent(selectedFormats));
+        params.push("new_card=true"); // Always preload new
         params.push("ts=" + Date.now()); // Cache buster
 
         if (params.length > 0) url += "?" + params.join("&");
@@ -1130,7 +1173,7 @@
         `).join("");
     }
 
-    async function loadCard() {
+    async function loadCard(forceNew = false) {
       const cardWrapper = document.getElementById("card-wrapper");
 
       // Show loading state
@@ -1138,7 +1181,7 @@
       cardWrapper.innerHTML = "";
 
       try {
-        const card = await fetchCardData();
+        const card = await fetchCardData(forceNew);
         currentCardData = card; // Store for history
 
         const manaIcons = renderManaCost(card.mana_cost);
@@ -1304,7 +1347,7 @@
         if (gameOver) {
           await resetGame();
         }
-        loadCard();
+        loadCard(true); // Always force new on explicit Next
         currentGuess = [];
         renderGuess();
       };

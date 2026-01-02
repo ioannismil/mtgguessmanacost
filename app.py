@@ -11,7 +11,17 @@ def index():
         session["lives"] = 3
         session["score"] = 0
         session["streak"] = 0
-    return render_template("index.html", lives=session["lives"], score=session["score"], streak=session.get("streak", 0))
+        session["history"] = []
+    
+    # Ensure history exists if session was old
+    if "history" not in session:
+        session["history"] = []
+        
+    return render_template("index.html", 
+                         lives=session["lives"], 
+                         score=session["score"], 
+                         streak=session.get("streak", 0),
+                         history=session["history"])
 
 @app.route("/privacy")
 def privacy():
@@ -22,10 +32,18 @@ def reset_game():
     session["lives"] = 3
     session["score"] = 0
     session["streak"] = 0
+    session["history"] = []
+    session.pop("current_card_data", None) # Clear cached card
     return jsonify({"message": "Game restarting!"})
 
 @app.route("/get_card")
 def get_card():
+    force_new = request.args.get("new_card", "false").lower() == "true"
+    
+    # Return cached card if available and not forcing new
+    if not force_new and "current_card_data" in session:
+        return jsonify(session["current_card_data"])
+
     selected_set = request.args.get("set", "").lower().strip()
     colors_filter = request.args.get("colors", "").strip()
     formats_filter = request.args.get("formats", "").strip()
@@ -87,6 +105,10 @@ def get_card():
 
         # Clean up for comparison
         session["current_mana_cost"] = card["mana_cost"].upper().replace(" ", "")
+        
+        # Save full card data to session for persistence
+        session["current_card_data"] = card
+
         return jsonify(card)
     except Exception as e:
         print(f"ERROR: Failed to parse card data: {e}")
@@ -120,6 +142,29 @@ def guess():
         result["correct"] = False
         result["message"] = "❌ Wrong!"
 
+    # Add to history
+    card_data = session.get("current_card_data", {})
+    if card_data:
+        if "history" not in session:
+            session["history"] = []
+        
+        # Prepend to history (max 10)
+        history_item = {
+            "name": card_data.get("name"),
+            "image": card_data.get("image"),
+            "correct_cost": correct_cost,
+            "is_correct": result["correct"]
+        }
+        
+        # We need to manage the list manually to prepend
+        current_history = session["history"]
+        current_history.insert(0, history_item)
+        if len(current_history) > 10:
+            current_history.pop()
+        session["history"] = current_history
+        session.modified = True
+
+
     result["lives"] = session["lives"]
     result["score"] = session["score"]
     result["streak"] = session.get("streak", 0)
@@ -138,6 +183,8 @@ def reset():
     session["score"] = 0
     session["streak"] = 0
     session["current_card"] = None
+    session["history"] = []
+    session.pop("current_card_data", None) # Clear cached card
     return jsonify({"message": "Game reset", "lives": session["lives"], "score": session["score"], "streak": session["streak"]})
 
 
