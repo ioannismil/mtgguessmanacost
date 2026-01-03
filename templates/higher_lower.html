@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Higher or Lower - MTG</title>
+    <style>
+        :root {
+            --bg-color: #20232a;
+            --text-color: #fff;
+            --accent: #61dafb;
+            --card-width: 40vw;
+            --card-max-width: 250px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: var(--bg-color);
+            background: radial-gradient(circle at center, #2c313c 0%, #20232a 100%);
+            color: var(--text-color);
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: flex-start;
+            gap: 3rem;
+            align-items: center;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            opacity: 0.7;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent);
+            opacity: 1;
+        }
+
+        .burger-menu {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .burger-bar {
+            width: 25px;
+            height: 3px;
+            background-color: #fff;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                justify-content: space-between;
+                gap: 0;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                flex-direction: column;
+                background: #2c313c;
+                padding: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .burger-menu {
+                display: flex;
+            }
+
+            .game-area {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1000px;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 6vw, 3rem);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            /* background: linear-gradient(to right, #61dafb, #d6d6d6); */
+            -webkit-background-clip: text;
+            background-clip: text;
+            /* -webkit-text-fill-color: transparent; */
+            text-shadow: 0 0 20px rgba(97, 218, 251, 0.3);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .score-board {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .card-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .card-image {
+            width: var(--card-width);
+            max-width: var(--card-max-width);
+            aspect-ratio: 63 / 88;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            object-fit: cover;
+            background: #1a1c22;
+            transition: transform 0.3s ease;
+        }
+
+        /* Overlay specific to Higher/Lower right card */
+        .hidden-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+            opacity: 0;
+            /* Hidden by default via class toggle */
+            pointer-events: none;
+        }
+
+        .hidden-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .mana-circles {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .vs-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #888;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 20;
+        }
+
+        .btn-action {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            width: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-up {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-up:hover {
+            background: #43a047;
+            transform: scale(1.05);
+        }
+
+        .btn-down {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-down:hover {
+            background: #e53935;
+            transform: scale(1.05);
+        }
+
+        .result-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .result-overlay.show {
+            opacity: 1;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+
+            to {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .game-area {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .controls {
+                flex-direction: row;
+                /* Put controls below first card on mobile logic if we want, but usually standard flow is top-down */
+            }
+
+            .card-image {
+                width: 60vw;
+            }
+
+            /* On mobile, standard user flow: 
+           [Left Card]
+           [Buttons]
+           [Right Card (Hidden)]
+        */
+            .game-area {
+                flex-direction: column;
+            }
+        }
+
+        /* Hide mana cost visual */
+        .mana-hider {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 35%;
+            height: 12%;
+            background: #20232a;
+            border-radius: 4px;
+            z-index: 5;
+        }
+    </style>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7728230912872054"
+        crossorigin="anonymous"></script>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BV26PCJVKY"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-BV26PCJVKY');
+</script>
+
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">MTG Puzzles</a>
+        <div class="burger-menu" onclick="toggleNav()">
+            <div class="burger-bar"></div>
+            <div class="burger-bar"></div>
+            <div class="burger-bar"></div>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="/" class="nav-link">Guess The Mana Cost</a>
+            <a href="/higher_lower" class="nav-link active">Higher or Lower</a>
+        </div>
+    </nav>
+
+    <div class="game-container">
+        <h1>Higher or Lower?</h1>
+        <div class="score-board">
+            Score: <span id="score">0</span>
+        </div>
+
+        <div class="game-area">
+            <!-- Left Card (Known) -->
+            <div class="card-slot" id="left-slot">
+                <img id="img-left" class="card-image" src="" alt="Card 1">
+                <div class="mana-circles">CMC: <span id="cmc-left">?</span></div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn-action btn-up" onclick="guess('higher')">
+                    ▲ Higher
+                </button>
+                <div class="vs-text">VS</div>
+                <button class="btn-action btn-down" onclick="guess('lower')">
+                    ▼ Lower
+                </button>
+            </div>
+
+            <!-- Right Card (Unknown) -->
+            <div class="card-slot" id="right-slot">
+                <div class="mana-hider" id="mana-hider"></div>
+                <img id="img-right" class="card-image" src="" alt="Card 2">
+                <div class="mana-circles" id="cmc-right-display" style="opacity:0">CMC: <span id="cmc-right">?</span>
+                </div>
+                <div id="result-icon" class="result-overlay"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let leftCard = null;
+        let rightCard = null;
+        let score = 0;
+        let isLoading = false;
+
+        let nextCardPromise = null;
+
+        // Fetch a new random card
+        async function fetchCard() {
+            try {
+                const res = await fetch('/get_card?new_card=true');
+                const data = await res.json();
+                return data; // { name, image, mana_cost, cmc }
+            } catch (e) {
+                console.error("Failed to fetch card", e);
+                return null; // Handle error gracefully
+            }
+        }
+
+        async function initGame() {
+            score = 0;
+            updateScore();
+
+            // Load initial two cards
+            leftCard = await fetchCard();
+            rightCard = await fetchCard();
+
+            // Ensure they actally loaded, try again if null (basic retry)
+            if (!leftCard) leftCard = await fetchCard();
+            if (!rightCard) rightCard = await fetchCard();
+
+            // Ensure they aren't the same card (unlikely but possible)
+            while (leftCard && rightCard && leftCard.name === rightCard.name) {
+                rightCard = await fetchCard();
+            }
+
+            render();
+        }
+
+        function render() {
+            if (!leftCard || !rightCard) return;
+
+            // Left Card
+            document.getElementById('img-left').src = leftCard.image;
+            document.getElementById('cmc-left').textContent = leftCard.cmc;
+
+            // Right Card
+            document.getElementById('img-right').src = rightCard.image;
+            document.getElementById('cmc-right').textContent = rightCard.cmc;
+
+            // Reset Right visuals
+            document.getElementById('mana-hider').style.display = 'block';
+            document.getElementById('cmc-right-display').style.opacity = '0';
+            document.getElementById('result-icon').className = 'result-overlay';
+            document.getElementById('result-icon').textContent = '';
+
+            isLoading = false;
+        }
+
+        async function nextRound() {
+            // Move Right card to Left
+            leftCard = rightCard;
+
+            // Use the pre-fetched card if available, otherwise fetch now
+            let nextCard;
+            if (nextCardPromise) {
+                nextCard = await nextCardPromise;
+                nextCardPromise = null;
+            } else {
+                nextCard = await fetchCard();
+            }
+
+            if (nextCard) {
+                rightCard = nextCard;
+                render();
+            } else {
+                // If fetch failed, try one more time or alert?
+                // For now, reset loading so user isn't stuck (though they are stuck without a card)
+                isLoading = false;
+                alert("Failed to load next card. Please refresh.");
+            }
+        }
+
+        function gameOver() {
+            alert(`Game Over! Final Score: ${score}`);
+            initGame();
+        }
+
+        function guess(direction) {
+            if (isLoading) return;
+            isLoading = true;
+
+            // Reveal
+            document.getElementById('mana-hider').style.display = 'none';
+            document.getElementById('cmc-right-display').style.opacity = '1';
+
+            const leftCMC = parseFloat(leftCard.cmc);
+            const rightCMC = parseFloat(rightCard.cmc);
+
+            let isCorrect = false;
+
+            if (direction === 'higher') {
+                isCorrect = rightCMC >= leftCMC;
+            } else {
+                isCorrect = rightCMC <= leftCMC;
+            }
+
+            // Show result icon
+            const resultEl = document.getElementById('result-icon');
+            resultEl.textContent = isCorrect ? '✅' : '❌';
+            resultEl.classList.add('show');
+
+            if (isCorrect) {
+                score++;
+                updateScore();
+
+                // PERFORMANCE: Start fetching *immediately* while animation plays
+                nextCardPromise = fetchCard();
+
+                setTimeout(nextRound, 1500); // Wait 1.5s to show result then next
+            } else {
+                setTimeout(gameOver, 1500);
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+
+        function toggleNav() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        // Start
+        initGame();
+
+    </script>
+</body>
+
+</html>

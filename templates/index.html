@@ -665,6 +665,94 @@
     .hidden {
       display: none;
     }
+
+    /* Navbar Styles */
+    .navbar {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: flex-start;
+      gap: 3rem;
+      align-items: center;
+      box-sizing: border-box;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 1.2rem;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .nav-link {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+      opacity: 0.7;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--accent);
+      opacity: 1;
+    }
+
+    .burger-menu {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    .burger-bar {
+      width: 25px;
+      height: 3px;
+      background-color: #fff;
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        justify-content: space-between;
+        gap: 0;
+      }
+
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        flex-direction: column;
+        background: #2c313c;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .nav-links.active {
+        display: flex;
+      }
+
+      .burger-menu {
+        display: flex;
+      }
+    }
   </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7728230912872054"
     crossorigin="anonymous"></script>
@@ -681,7 +769,19 @@
 </script>
 
 <body>
-  <h1>Guess the Mana Cost </h1>
+  <nav class="navbar">
+    <a href="/" class="nav-brand">MTG Puzzles</a>
+    <div class="burger-menu" onclick="toggleNav()">
+      <div class="burger-bar"></div>
+      <div class="burger-bar"></div>
+      <div class="burger-bar"></div>
+    </div>
+    <div class="nav-links" id="navLinks">
+      <a href="/" class="nav-link active">Guess The Mana Cost</a>
+      <a href="/higher_lower" class="nav-link">Higher or Lower</a>
+    </div>
+  </nav>
+  <h1>Guess The Mana Cost </h1>
   <div id="instructions">
     Test your knowledge! Tap the <b style="color:#61dafb">mana symbols</b> to recreate the card's cost.
   </div>
@@ -867,6 +967,12 @@
 
 
   <script>
+    function toggleNav() {
+      document.getElementById('navLinks').classList.toggle('active');
+    }
+
+    // ... existing script content ...
+
     let currentCardData = null;
 
     window.onload = () => {

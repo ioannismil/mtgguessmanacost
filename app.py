@@ -98,6 +98,7 @@ def get_card():
             "name": data["name"],
             "image": data["image_uris"]["normal"] if "image_uris" in data else None,
             "mana_cost": mana_cost,
+            "cmc": data.get("cmc", 0.0)
         }
 
         # Save Scryfall URI and mana cost to session
@@ -113,6 +114,10 @@ def get_card():
     except Exception as e:
         print(f"ERROR: Failed to parse card data: {e}")
         return jsonify({"error": "Failed to process card data."}), 500
+
+@app.route("/higher_lower")
+def higher_lower():
+    return render_template("higher_lower.html")
 
 @app.route("/get_sets")
 def get_sets():
