@@ -753,6 +753,45 @@
         display: flex;
       }
     }
+
+    /* Timed Mode Styles */
+    .mode-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ccc;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .mode-btn:hover,
+    .mode-btn.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    .timer-low {
+      color: #f44336 !important;
+      animation: pulse-red 0.5s infinite;
+    }
+
+    @keyframes pulse-red {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
   </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7728230912872054"
     crossorigin="anonymous"></script>
@@ -788,12 +827,22 @@
   <div id="stats">
     Lives: <span id="lives">{{ lives }}</span> &nbsp;&nbsp;|&nbsp;&nbsp; Score: <span id="score">{{ score
       }}</span> &nbsp;&nbsp;|&nbsp;&nbsp; Streak: <span id="streak">{{ streak }}</span>
+    <span id="timer-container"
+      style="display:none; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 15px; margin-left: 15px;">
+      Time: <span id="timer" style="color:var(--accent); font-weight:bold;">60</span>s
+    </span>
   </div>
+
+
   <button id="filter-toggle" class="filter-toggle-btn" onclick="toggleFilters()">
     Game Settings & Filters
   </button>
 
   <div id="filter-container" class="filter-container" style="display:none;">
+    <div style="margin-bottom: 1rem;">
+      <button id="btn-normal" class="mode-btn active" onclick="switchMode('normal')">Normal Mode</button>
+      <button id="btn-timed" class="mode-btn" onclick="switchMode('timed')">60s Rush</button>
+    </div>
     <div class="set-filter">
       <label for="setSelect">Filter by Set:</label>
       <select id="setSelect" class="setDropdown" style="width:100%;max-width:90%;">
@@ -1144,8 +1193,11 @@
       currentGuess = [];
 
       document.getElementById("message").textContent = "New filter selected — game restarting!";
-      preloadedCardPromise = null;
+      document.getElementById("message").textContent = "New filter selected — game restarting!";
       currentGuess = [];
+
+      // Clear queue for new filters
+      cardQueue = [];
 
       // Clear history
       document.getElementById("history-list").innerHTML = "";
@@ -1153,7 +1205,10 @@
 
       renderGuess();
 
-      loadCard(true);
+      // Start fresh
+      document.getElementById("card-wrapper").classList.add("loading");
+      await fillQueue();
+      loadNextCard();
     }
 
 
@@ -1171,15 +1226,137 @@
     let currentGuess = [];
     let buttonsDisabled = false;
     let gameOver = false;
-    let preloadedCardPromise = null;
 
-    async function fetchCardData(forceNew = false) {
-      if (preloadedCardPromise && !forceNew) {
-        const data = await preloadedCardPromise;
-        preloadedCardPromise = null;
-        return data;
+    // Queue System
+    let cardQueue = [];
+    const QUEUE_SIZE = 3;
+
+    // Timed Mode Globals
+    let isTimedMode = false;
+    let timeLeft = 60;
+    let timerInterval = null;
+
+    async function fillQueue() {
+      while (cardQueue.length < QUEUE_SIZE) {
+        try {
+          // Fetch in background
+          const card = await fetchCardData(true);
+          if (card) cardQueue.push(card);
+        } catch (e) {
+          console.error("Queue fill error", e);
+          break; // Stop trying if error
+        }
+      }
+    }
+
+    async function loadNextCard() {
+      // Ensure we have cards
+      if (cardQueue.length === 0) {
+        await fillQueue();
       }
 
+      if (cardQueue.length > 0) {
+        const card = cardQueue.shift();
+        renderCard(card);
+        fillQueue(); // Refill in background
+      } else {
+        // Fallback if queue failed
+        loadCard(true);
+      }
+    }
+
+    function switchMode(mode) {
+      if (buttonsDisabled && !gameOver) return; // Don't switch mid-play unless game over
+
+      if (mode === 'timed') {
+        isTimedMode = true;
+        document.getElementById('btn-timed').classList.add('active');
+        document.getElementById('btn-normal').classList.remove('active');
+        document.getElementById('timer-container').style.display = 'inline';
+        document.getElementById('lives').parentElement.childNodes[0].textContent = "Lives: ∞ ";
+        // In timed mode, lives are effectively infinite, so we can hide/dim them or just show infinity
+      } else {
+        isTimedMode = false;
+        document.getElementById('btn-normal').classList.add('active');
+        document.getElementById('btn-timed').classList.remove('active');
+        document.getElementById('timer-container').style.display = 'none';
+        document.getElementById('lives').parentElement.childNodes[0].textContent = "Lives: ";
+        stopTimer();
+      }
+
+      // Reset game with new mode
+      resetGameWithMode();
+    }
+
+    async function resetGameWithMode() {
+      const res = await fetch("/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: isTimedMode ? "timed" : "classic" })
+      });
+      const result = await res.json();
+      updateStats(result);
+
+      if (isTimedMode) {
+        timeLeft = 60;
+        updateTimerDisplay();
+      } else {
+        stopTimer();
+      }
+
+      // Initialize Queue
+      cardQueue = []; // Clear old queue
+      // Show loading...
+      document.getElementById("card-wrapper").classList.add("loading");
+      document.getElementById("card-wrapper").innerHTML = "";
+
+      await fillQueue(); // Wait for at least 3 cards (or as many as possible)
+
+      loadNextCard();
+    }
+
+    function startTimer() {
+      if (timerInterval) return;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+          handleTimeUp();
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById('timer');
+      el.textContent = timeLeft;
+      if (timeLeft <= 10) el.classList.add('timer-low');
+      else el.classList.remove('timer-low');
+    }
+
+    function handleTimeUp() {
+      stopTimer();
+      gameOver = true;
+      disableAllButtons();
+      alert(`Time's Up! Final Score: ${document.getElementById('score').textContent}`);
+      // Reset to initial state for that mode
+      resetGameWithMode();
+    }
+
+    function updateStats(result) {
+      document.getElementById("lives").textContent = isTimedMode ? "∞" : result.lives;
+      document.getElementById("score").textContent = result.score;
+      document.getElementById("streak").textContent = result.streak;
+    }
+
+    async function fetchCardData(forceNew = false) {
+      // Direct fetch helper
       const selectedSet = document.getElementById("setSelect").value;
       const selectedColors = getSelectedColors();
 
@@ -1203,31 +1380,8 @@
       return await res.json();
     }
 
-    function startPreload() {
-      preloadedCardPromise = (async () => {
-        const selectedSet = document.getElementById("setSelect").value;
-        const selectedColors = getSelectedColors();
-
-        let url = "/get_card";
-        const params = [];
-        if (selectedSet) params.push("set=" + encodeURIComponent(selectedSet));
-        if (selectedColors) params.push("colors=" + encodeURIComponent(selectedColors));
-
-        const selectedFormats = getSelectedFormats();
-        if (selectedFormats) params.push("formats=" + encodeURIComponent(selectedFormats));
-        params.push("new_card=true"); // Always preload new
-        params.push("ts=" + Date.now()); // Cache buster
-
-        if (params.length > 0) url += "?" + params.join("&");
-
-        const res = await fetch(url);
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw { status: res.status, message: errData.error || "Error fetching card" };
-        }
-        return await res.json();
-      })();
-    }
+    // Deprecated: startPreload is replaced by queue system
+    function startPreload() { }
 
     function renderManaCost(manaCost) {
       if (!manaCost) return "";
@@ -1279,7 +1433,8 @@
         `).join("");
     }
 
-    async function loadCard(forceNew = false) {
+    // Unified render function
+    function renderCard(card) {
       const cardWrapper = document.getElementById("card-wrapper");
 
       // Show loading state
@@ -1287,12 +1442,13 @@
       cardWrapper.innerHTML = "";
 
       try {
-        const card = await fetchCardData(forceNew);
         currentCardData = card; // Store for history
-
         const manaIcons = renderManaCost(card.mana_cost);
 
-        // Create image element and wait for it to load
+        // NOTE: Since we are preloading, the image *blob* isn't preloaded, just the URL.
+        // To make it truly instant, we ideally preload the images too. 
+        // For now, we rely on browser cache or fast CDN.
+
         if (card.image) {
           const img = new Image();
           img.src = card.image;
@@ -1308,6 +1464,11 @@
             manaOverlay.id = "mana_symbol";
             manaOverlay.className = "hide-mana-cost";
             cardWrapper.appendChild(manaOverlay);
+
+            // Resume/Start timer if in timed mode
+            if (isTimedMode && timeLeft > 0 && !gameOver) {
+              startTimer();
+            }
           };
 
           img.onerror = () => {
@@ -1326,29 +1487,16 @@
         gameOver = false;
 
       } catch (err) {
-        cardWrapper.classList.remove("loading");
-        cardWrapper.innerHTML = `
-          <div style="
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            justify-content:center;
-            height:100%;
-            padding:1rem;
-            color:#ff6b6b;
-            text-align:center;
-            border: 2px dashed #ff6b6b;
-            border-radius: 10px;
-            background: rgba(40, 0, 0, 0.3);
-          ">
-            <div style="font-size:3rem; margin-bottom:0.5rem;">⚠️</div>
-            <div style="font-weight:bold; font-size:1.1rem; margin-bottom:0.5rem;">No Cards Found</div>
-            <div style="font-size:0.9rem; color:#ccc;">${err.message || "Please adjust your filters and try again."}</div>
-          </div>
-        `;
-        document.getElementById("message").textContent = "Please change your filters.";
-        disableAllButtons();
+        // handle error
       }
+    }
+
+    // Kept for compatibility but redirects to queue
+    async function loadCard(forceNew = false) {
+      // If it's a "reset" type load (forceNew=true usually implies start of game or explicit skip)
+      // We cleared queue in reset functions, so this might need to just fetch one if queue empty.
+      if (cardQueue.length === 0) await fillQueue();
+      loadNextCard();
     }
 
     function renderManaIconsFromCost(manaCost) {
@@ -1375,16 +1523,21 @@
       const res = await fetch("/guess", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guess })
+        body: JSON.stringify({
+          guess,
+          actual_mana_cost: currentCardData.mana_cost
+        })
       });
+
+      // Pause timer immediately
+      if (isTimedMode) stopTimer();
+
       document.getElementById("mana_symbol").className = 'show-mana-cost';
       const result = await res.json();
 
       // Show the result message
       document.getElementById("message").textContent = result.message;
-      document.getElementById("lives").textContent = result.lives;
-      document.getElementById("score").textContent = result.score;
-      document.getElementById("streak").textContent = result.streak;
+      updateStats(result);
 
       // Update History
       if (currentCardData) {
@@ -1402,14 +1555,28 @@
         gameOver = true;
       }
 
-      showNextButton();
+
+      if (isTimedMode) {
+        // Don't show next button, we auto-advanced
+      } else {
+        showNextButton();
+      }
       if (result.scryfall_uri) {
         addScryfallLink(result.scryfall_uri);
       }
 
       // Preload next card if game is not over
       if (!result.game_over) {
-        startPreload();
+        // Queue is handled automatically by loadNextCard() refiling, 
+        // but we can ensure it's topped up here.
+        fillQueue();
+
+        // In Timed Mode, Auto-Advance
+        if (isTimedMode) {
+          setTimeout(() => {
+            if (!gameOver) loadNextCard();
+          }, 1000); // 1s delay to see result
+        }
       }
     }
 
@@ -1451,9 +1618,10 @@
       nextBtn.onclick = async () => {
         nextBtn.remove();
         if (gameOver) {
-          await resetGame();
+          await resetGameWithMode(); // Use consistent reset
+        } else {
+          loadNextCard();
         }
-        loadCard(true); // Always force new on explicit Next
         currentGuess = [];
         renderGuess();
       };

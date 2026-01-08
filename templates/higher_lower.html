@@ -327,6 +327,51 @@
             border-radius: 4px;
             z-index: 5;
         }
+
+        /* Timed Mode Styles */
+        .mode-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ccc;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .mode-btn:hover,
+        .mode-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        #timer-container {
+            color: var(--accent);
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .timer-low {
+            color: #f44336 !important;
+            animation: pulse-red 0.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
     </style>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7728230912872054"
         crossorigin="anonymous"></script>
@@ -358,8 +403,18 @@
 
     <div class="game-container">
         <h1>Higher or Lower?</h1>
+
+        <div style="margin-bottom: 1rem;">
+            <button id="btn-normal" class="mode-btn active" onclick="switchMode('normal')">Normal Mode</button>
+            <button id="btn-timed" class="mode-btn" onclick="switchMode('timed')">60s Rush</button>
+        </div>
+
         <div class="score-board">
             Score: <span id="score">0</span>
+            <span id="timer-display"
+                style="display:none; margin-left:15px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 15px;">
+                Time: <span id="timer">60</span>s
+            </span>
         </div>
 
         <div class="game-area">
@@ -417,8 +472,15 @@
         let rightCard = null;
         let score = 0;
         let isLoading = false;
+        let isTimedMode = false;
+        let timeLeft = 60;
+        let timerInterval = null;
 
-        let nextCardPromise = null;
+        let nextCardPromise = null; // Deprecated by queue
+
+        // Queue System
+        let cardQueue = [];
+        const QUEUE_SIZE = 3;
 
         // Fetch a new random card
         async function fetchCard() {
@@ -432,22 +494,90 @@
             }
         }
 
+        function switchMode(mode) {
+            if (isLoading) return; // Prevent switching mid-load
+
+            if (mode === 'timed') {
+                isTimedMode = true;
+                document.getElementById('btn-timed').classList.add('active');
+                document.getElementById('btn-normal').classList.remove('active');
+                document.getElementById('timer-display').style.display = 'inline';
+            } else {
+                isTimedMode = false;
+                document.getElementById('btn-normal').classList.add('active');
+                document.getElementById('btn-timed').classList.remove('active');
+                document.getElementById('timer-display').style.display = 'none';
+                stopTimer();
+            }
+            initGame();
+        }
+
+        // Queue System
+
+        async function fillQueue() {
+            while (cardQueue.length < QUEUE_SIZE) {
+                try {
+                    const card = await fetchCard();
+                    if (card) cardQueue.push(card);
+                } catch (e) {
+                    console.error("Queue fill error", e);
+                    break;
+                }
+            }
+        }
+
         async function initGame() {
             score = 0;
             updateScore();
+            stopTimer();
 
-            // Load initial two cards
-            leftCard = await fetchCard();
-            rightCard = await fetchCard();
+            // Clear Queue
+            cardQueue = [];
 
-            // Ensure they actally loaded, try again if null (basic retry)
+            // Show loading on both slots
+            document.getElementById('left-slot').classList.add('loading');
+            document.getElementById('right-slot').classList.add('loading');
+
+            // Wait for enough cards to start (need 2 immediately, plus buffer)
+            // We can fetch 3, use 2, keep 1 in queue.
+            await fillQueue();
+
+            document.getElementById('left-slot').classList.remove('loading');
+            document.getElementById('right-slot').classList.remove('loading');
+
+            if (cardQueue.length < 2) {
+                // Critical failure, try fetching explicitly
+                leftCard = await fetchCard();
+                rightCard = await fetchCard();
+            } else {
+                leftCard = cardQueue.shift();
+                rightCard = cardQueue.shift();
+                // Queue now has 1 or more cards (fillQueue runs in background if we call it again)
+                fillQueue();
+            }
+
+            // Ensure they actally loaded
             if (!leftCard) leftCard = await fetchCard();
             if (!rightCard) rightCard = await fetchCard();
 
             // Ensure they aren't the same card (unlikely but possible)
+            // Simple check, if same, just fetch a new right card standard way
             while (leftCard && rightCard && leftCard.name === rightCard.name) {
                 rightCard = await fetchCard();
             }
+
+            if (isTimedMode) {
+                timeLeft = 60;
+                updateTimerDisplay();
+                // We don't start timer yet, wait for render
+            }
+
+            // Notify backend of reset (and mode)
+            await fetch('/reset_game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: isTimedMode ? 'timed' : 'classic' })
+            });
 
             render();
         }
@@ -470,40 +600,80 @@
             document.getElementById('result-icon').textContent = '';
 
             isLoading = false;
+
+            // Resume/Start timer if in timed mode
+            if (isTimedMode && timeLeft > 0) {
+                startTimer();
+            }
         }
 
         async function nextRound() {
             // Move Right card to Left
             leftCard = rightCard;
 
-            // Use the pre-fetched card if available, otherwise fetch now
-            let nextCard;
-            if (nextCardPromise) {
-                nextCard = await nextCardPromise;
-                nextCardPromise = null;
+            // Get next from Queue
+            if (cardQueue.length === 0) {
+                // Queue Empty? Show loading on right slot
+                document.getElementById('right-slot').classList.add('loading');
+                rightCard = await fetchCard();
+                document.getElementById('right-slot').classList.remove('loading');
+
+                fillQueue(); // Trigger refill
             } else {
-                nextCard = await fetchCard();
+                rightCard = cardQueue.shift();
+                fillQueue(); // Trigger refill
             }
 
-            if (nextCard) {
-                rightCard = nextCard;
+            if (rightCard) {
                 render();
             } else {
                 // If fetch failed, try one more time or alert?
-                // For now, reset loading so user isn't stuck (though they are stuck without a card)
+                // For now, reset loading so user isn't stuck 
                 isLoading = false;
                 alert("Failed to load next card. Please refresh.");
             }
         }
 
         function gameOver() {
+            stopTimer();
             alert(`Game Over! Final Score: ${score}`);
             initGame();
+        }
+
+        function startTimer() {
+            if (timerInterval) return; // Already running
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    gameOver();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = timeLeft;
+            if (timeLeft <= 10) {
+                timerEl.classList.add('timer-low');
+            } else {
+                timerEl.classList.remove('timer-low');
+            }
         }
 
         function guess(direction) {
             if (isLoading) return;
             isLoading = true;
+
+            // Pause timer IMMEDIATELY so animation/load time doesn't count
+            if (isTimedMode) stopTimer();
 
             // Reveal
             document.getElementById('mana-hider').style.display = 'none';
@@ -530,11 +700,27 @@
                 updateScore();
 
                 // PERFORMANCE: Start fetching *immediately* while animation plays
-                nextCardPromise = fetchCard();
+                // Queue handles this automatically via nextRound -> fillQueue
+                // But we can trigger a fill check here just in case
+                fillQueue();
 
                 setTimeout(nextRound, 1500); // Wait 1.5s to show result then next
             } else {
-                setTimeout(gameOver, 1500);
+                // In timed mode, wrong answer doesn't end game immediately, 
+                // but we might want a small penalty or just continue?
+                // Plan said "Infinite lives", so we just continue.
+                // However, user usually wants to know they failed.
+                // We'll just show X and continue to next round if timed mode.
+
+                if (isTimedMode) {
+                    // Wait to show X, then NEXT card, don't reset score, just time/streak penalty
+                    // Since we are scoring by "Total Correct", we just move on.
+                    // nextCardPromise = fetchCard(); // Queue handles it
+                    fillQueue();
+                    setTimeout(nextRound, 1500);
+                } else {
+                    setTimeout(gameOver, 1500);
+                }
             }
         }
 

@@ -29,12 +29,19 @@ def privacy():
 
 @app.route("/reset_game", methods=["POST"])
 def reset_game():
-    session["lives"] = 3
+    data = request.get_json() or {}
+    mode = data.get("mode", "classic")
+    
+    if mode == "timed":
+        session["lives"] = 999 # Infinite lives effectively
+    else:
+        session["lives"] = 3
+        
     session["score"] = 0
     session["streak"] = 0
     session["history"] = []
     session.pop("current_card_data", None) # Clear cached card
-    return jsonify({"message": "Game restarting!"})
+    return jsonify({"message": f"Game restarting in {mode} mode!"})
 
 @app.route("/get_card")
 def get_card():
@@ -134,7 +141,12 @@ def get_sets():
 @app.route("/guess", methods=["POST"])
 def guess():
     user_guess = request.json["guess"].upper().replace(" ", "")
-    correct_cost = session.get("current_mana_cost", "").replace("/", "")
+    
+    # Stateless validation: prefer mana cost sent by client (for queue/prefetch scenarios)
+    if "actual_mana_cost" in request.json:
+        correct_cost = request.json["actual_mana_cost"].upper().replace(" ", "").replace("/", "")
+    else:
+        correct_cost = session.get("current_mana_cost", "").replace("/", "")
     result = {}
     if user_guess == correct_cost:
         session["score"] += 1
@@ -184,7 +196,14 @@ def guess():
 
 @app.route("/reset", methods=["POST"])
 def reset():
-    session["lives"] = 3
+    data = request.get_json() or {}
+    mode = data.get("mode", "classic")
+    
+    if mode == "timed":
+        session["lives"] = 999
+    else:
+        session["lives"] = 3
+        
     session["score"] = 0
     session["streak"] = 0
     session["current_card"] = None
