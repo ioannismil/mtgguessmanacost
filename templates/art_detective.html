@@ -340,6 +340,348 @@
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
         }
+
+        .play-again-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .mode-toggle-container {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 30px;
+            padding: 5px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mode-toggle-btn {
+            padding: 8px 20px;
+            border-radius: 25px;
+            border: none;
+            background: transparent;
+            color: #aaa;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .mode-toggle-btn.active {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 10px rgba(97, 218, 251, 0.3);
+        }
+
+        .name-options {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .name-options.active {
+            display: flex;
+        }
+
+        .name-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .name-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        .name-btn.correct {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+
+        .name-btn.wrong {
+            background: #f44336;
+            border-color: #f44336;
+            opacity: 0.5;
+        }
+
+        /* Filter Styles Copy from Index */
+        .filter-toggle-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-toggle-btn:hover {
+            background: rgba(97, 218, 251, 0.1);
+            border-color: rgba(97, 218, 251, 0.3);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .filter-container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .set-filter {
+            margin-bottom: 1rem;
+        }
+
+        .setDropdown {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #333;
+            color: white;
+        }
+
+        .color-filter {
+            margin: 0.75rem 0;
+            padding: 0 1rem;
+        }
+
+        .color-filter>label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .color-checkboxes {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .color-checkbox {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+            position: relative;
+        }
+
+        .color-checkbox input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .color-icon {
+            font-weight: bold;
+            font-size: 1.1rem;
+            pointer-events: none;
+        }
+
+        .color-checkbox.white {
+            background: linear-gradient(145deg, #fffde7, #f5e6c8);
+            color: #5c4d2e;
+            border: 2px solid #d4c5a0;
+        }
+
+        .color-checkbox.blue {
+            background: linear-gradient(145deg, #4fc3f7, #1976d2);
+            color: #fff;
+            border: 2px solid #0d47a1;
+        }
+
+        .color-checkbox.black {
+            background: linear-gradient(145deg, #424242, #1a1a1a);
+            color: #b388ff;
+            border: 2px solid #6a1b9a;
+        }
+
+        .color-checkbox.red {
+            background: linear-gradient(145deg, #ff7043, #d32f2f);
+            color: #fff;
+            border: 2px solid #b71c1c;
+        }
+
+        .color-checkbox.green {
+            background: linear-gradient(145deg, #81c784, #388e3c);
+            color: #fff;
+            border: 2px solid #1b5e20;
+        }
+
+        .color-checkbox.colorless {
+            background: linear-gradient(145deg, #bdbdbd, #757575);
+            color: #fff;
+            border: 2px solid #424242;
+        }
+
+        .color-checkbox:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(97, 218, 251, 0.5);
+        }
+
+        .color-checkbox input:not(:checked)+.color-icon {
+            opacity: 0.3;
+        }
+
+        .color-checkbox input:not(:checked)~.color-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80%;
+            height: 3px;
+            background: rgba(255, 0, 0, 0.7);
+            transform: translate(-50%, -50%) rotate(-45deg);
+            border-radius: 2px;
+        }
+
+        .format-filter {
+            margin: 1.5rem 0 0.75rem 0;
+            padding: 0 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+        }
+
+        .format-filter>label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .format-checkboxes {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .format-checkbox {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .format-checkbox input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .format-label {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: #aaa;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .format-checkbox input:checked+.format-label {
+            background: rgba(97, 218, 251, 0.2);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 8px rgba(97, 218, 251, 0.3);
+        }
+
+        .format-checkbox:hover .format-label {
+            border-color: rgba(97, 218, 251, 0.5);
+            color: #fff;
+        }
+
+
+        .name-input-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            outline: none;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .name-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(97, 218, 251, 0.3);
+        }
+
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: #2c313c;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-top: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+            flex-direction: column;
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .suggestion-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
     </style>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7728230912872054"
         crossorigin="anonymous"></script>
@@ -375,7 +717,94 @@
 
         <div class="score-board" style="margin-bottom: 1rem; font-size: 1.2rem;">
             <div class="lives-container" id="lives-display">❤️❤️❤️</div>
+            <div class="mode-toggle-container">
+                <button class="mode-toggle-btn active" onclick="setMode('color')">Guess Color</button>
+                <button class="mode-toggle-btn" onclick="setMode('name')">Guess Name</button>
+            </div>
             Score: <span id="score" style="color: var(--accent); font-weight: bold;">0</span>
+        </div>
+
+        <button id="filter-toggle" class="filter-toggle-btn" onclick="toggleFilters()">
+            Game Settings & Filters
+        </button>
+
+        <div id="filter-container" class="filter-container" style="display:none;">
+            <div class="set-filter">
+                <label for="setSelect">Filter by Set:</label>
+                <select id="setSelect" class="setDropdown" style="width:100%;max-width:90%;">
+                    <option value="">All Sets</option>
+                </select>
+            </div>
+
+            <div class="color-filter">
+                <div class="color-checkboxes">
+                    <label class="color-checkbox white">
+                        <input type="checkbox" id="colorW" value="W" checked>
+                        <span class="color-icon">W</span>
+                    </label>
+                    <label class="color-checkbox blue">
+                        <input type="checkbox" id="colorU" value="U" checked>
+                        <span class="color-icon">U</span>
+                    </label>
+                    <label class="color-checkbox black">
+                        <input type="checkbox" id="colorB" value="B" checked>
+                        <span class="color-icon">B</span>
+                    </label>
+                    <label class="color-checkbox red">
+                        <input type="checkbox" id="colorR" value="R" checked>
+                        <span class="color-icon">R</span>
+                    </label>
+                    <label class="color-checkbox green">
+                        <input type="checkbox" id="colorG" value="G" checked>
+                        <span class="color-icon">G</span>
+                    </label>
+                    <label class="color-checkbox colorless">
+                        <input type="checkbox" id="colorC" value="C" checked>
+                        <span class="color-icon">C</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="format-filter">
+                <label>Filter by Format (Legal in at least one):</label>
+                <div class="format-checkboxes">
+                    <label class="format-checkbox">
+                        <input type="checkbox" class="format-option" value="standard">
+                        <span class="format-label">Standard</span>
+                    </label>
+                    <label class="format-checkbox">
+                        <input type="checkbox" class="format-option" value="pioneer">
+                        <span class="format-label">Pioneer</span>
+                    </label>
+                    <label class="format-checkbox">
+                        <input type="checkbox" class="format-option" value="modern">
+                        <span class="format-label">Modern</span>
+                    </label>
+                    <label class="format-checkbox">
+                        <input type="checkbox" class="format-option" value="legacy">
+                        <span class="format-label">Legacy</span>
+                    </label>
+                    <label class="format-checkbox">
+                        <input type="checkbox" class="format-option" value="vintage">
+                        <span class="format-label">Vintage</span>
+                    </label>
+                    <label class="format-checkbox">
+                        <input type="checkbox" class="format-option" value="commander">
+                        <span class="format-label">Commander</span>
+                    </label>
+                    <label class="format-checkbox">
+                        <input type="checkbox" class="format-option" value="pauper">
+                        <span class="format-label">Pauper</span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-top:1.5rem; display:flex; gap:10px; justify-content:center;">
+                <button onclick="resetFilters()" class="filter-toggle-btn"
+                    style="font-size:0.85rem; padding:0.4rem 1rem;">
+                    Reset to Default
+                </button>
+            </div>
         </div>
 
         <div class="art-frame">
@@ -387,255 +816,481 @@
         </div>
 
         <div class="controls">
-            <div style="color: #ccc; margin-bottom: -10px;">Select Color Identity:</div>
-            <div class="color-toggles">
-                <div class="color-btn btn-w" onclick="toggleColor('W')"><span class="color-symbol">W</span></div>
-                <div class="color-btn btn-u" onclick="toggleColor('U')"><span class="color-symbol">U</span></div>
-                <div class="color-btn btn-b" onclick="toggleColor('B')"><span class="color-symbol">B</span></div>
-                <div class="color-btn btn-r" onclick="toggleColor('R')"><span class="color-symbol">R</span></div>
-                <div class="color-btn btn-g" onclick="toggleColor('G')"><span class="color-symbol">G</span></div>
-                <div class="color-btn btn-c" onclick="toggleColor('C')"><span class="color-symbol">◇</span></div>
+            <div class="controls">
+                <!-- Color Mode Controls -->
+                <div id="color-controls"
+                    style="width:100%; display:flex; flex-direction:column; align-items:center; gap:1.5rem;">
+                    <div style="color: #ccc; margin-bottom: -10px;">Select Color Identity:</div>
+                    <div class="color-toggles">
+                        <div class="color-btn btn-w" onclick="toggleColor('W')"><span class="color-symbol">W</span>
+                        </div>
+                        <div class="color-btn btn-u" onclick="toggleColor('U')"><span class="color-symbol">U</span>
+                        </div>
+                        <div class="color-btn btn-b" onclick="toggleColor('B')"><span class="color-symbol">B</span>
+                        </div>
+                        <div class="color-btn btn-r" onclick="toggleColor('R')"><span class="color-symbol">R</span>
+                        </div>
+                        <div class="color-btn btn-g" onclick="toggleColor('G')"><span class="color-symbol">G</span>
+                        </div>
+                        <div class="color-btn btn-c" onclick="toggleColor('C')"><span class="color-symbol">◇</span>
+                        </div>
+                    </div>
+                    <button id="submit-btn" class="submit-btn" onclick="submitGuess()">GUESS</button>
+                </div>
+
+                <!-- Name Mode Controls -->
+                <div id="name-controls" class="name-options" style="align-items:center;">
+                    <div class="name-input-wrapper">
+                        <input type="text" id="card-name-input" class="name-input" placeholder="Type card name..."
+                            autocomplete="off">
+                        <div id="suggestions" class="suggestions-list"></div>
+                    </div>
+                    <button class="submit-btn" onclick="submitNameGuess()" style="margin-top: 10px;">GUESS</button>
+                </div>
+
+                <button id="next-btn" class="submit-btn" onclick="loadCard()"
+                    style="display:none; background:#4caf50;">Next Card ➜</button>
             </div>
 
-            <button id="submit-btn" class="submit-btn" onclick="submitGuess()">GUESS</button>
+            <div class="result-panel" id="result-message"></div>
+            <div class="reveal-info" id="reveal-area">
+                <div id="card-name" style="color: #fff; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">
+                </div>
+                <div id="actual-colors"></div>
+            </div>
         </div>
 
-        <div class="result-panel" id="result-message"></div>
-        <div class="reveal-info" id="reveal-area">
-            <div id="card-name" style="color: #fff; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;"></div>
-            <div id="actual-colors"></div>
+        <!-- Game Over Modal -->
+        <div id="game-over-modal" class="game-over-modal">
+            <div class="game-over-content">
+                <h2 style="font-size: 3rem; margin: 0 0 1rem; color: #f44336;">Game Over</h2>
+                <p style="font-size: 1.5rem; margin-bottom: 2rem;">Final Score: <span id="final-score"
+                        style="color: var(--accent); font-weight:bold">0</span></p>
+                <button class="play-again-btn" onclick="resetGame()">Play Again ↻</button>
+            </div>
         </div>
-    </div>
+        <footer
+            style="margin-top: 3rem; padding: 2rem; color: #666; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px solid rgba(255,255,255,0.05); width: 100%;">
+            <div style="display: flex; gap: 20px;">
+                <a href="https://x.com/ioannis_mtd" target="_blank" title="X (Twitter)"
+                    style="color: #888; text-decoration: none; display: flex; align-items: center; transition: color 0.2s;">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path
+                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                </a>
+                <a href="https://bsky.app/profile/ioannismi.bsky.social" target="_blank" title="Bluesky"
+                    style="color: #888; text-decoration: none; display: flex; align-items: center; transition: color 0.2s;">
+                    <svg viewBox="0 0 600 530" width="24" height="24" fill="currentColor">
+                        <path
+                            d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 200.96-4.526 39.663-31.455 71.257-71.706 80.8-92.488 21.93-131.26 39.187-157.96 128.75-5.307 17.799-9.859 34.346-12.758 45.468-1.503 5.313-2.679 9.873-3.468 12.589-1.22 3.681-2.923 3.682-4.143 0-.79-2.716-1.966-7.276-3.469-12.589-2.9-11.122-7.46-27.674-12.767-45.474-26.7-89.559-65.48-106.82-157.96-128.75-40.25-9.543-67.18-41.137-71.706-80.8-5.956-52.17-16.111-183.25-16.111-200.96 0-88.687 77.74-60.816 125.72-24.795z" />
+                    </svg>
+                </a>
+            </div>
+            <a href="/privacy" style="color: #666; text-decoration: none; border-bottom: 1px dotted #666;">Privacy
+                Policy</a>
+        </footer>
+        <script>
+            let currentCard = null;
+            let selectedColors = new Set();
+            let score = 0;
+            let lives = 3;
+            let isRevealed = false;
+            let gameMode = 'color'; // 'color' or 'name'
 
-    <!-- Game Over Modal -->
-    <div id="game-over-modal" class="game-over-modal">
-        <div class="game-over-content">
-            <h2 style="font-size: 3rem; margin: 0 0 1rem; color: #f44336;">Game Over</h2>
-            <p style="font-size: 1.5rem; margin-bottom: 2rem;">Final Score: <span id="final-score"
-                    style="color: var(--accent); font-weight:bold">0</span></p>
-            <button class="play-again-btn" onclick="resetGame()">Play Again ↻</button>
-        </div>
-    </div>
-    <footer
-        style="margin-top: 3rem; padding: 2rem; color: #666; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px solid rgba(255,255,255,0.05); width: 100%;">
-        <div style="display: flex; gap: 20px;">
-            <a href="https://x.com/ioannis_mtd" target="_blank" title="X (Twitter)"
-                style="color: #888; text-decoration: none; display: flex; align-items: center; transition: color 0.2s;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                    <path
-                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-            </a>
-            <a href="https://bsky.app/profile/ioannismi.bsky.social" target="_blank" title="Bluesky"
-                style="color: #888; text-decoration: none; display: flex; align-items: center; transition: color 0.2s;">
-                <svg viewBox="0 0 600 530" width="24" height="24" fill="currentColor">
-                    <path
-                        d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 200.96-4.526 39.663-31.455 71.257-71.706 80.8-92.488 21.93-131.26 39.187-157.96 128.75-5.307 17.799-9.859 34.346-12.758 45.468-1.503 5.313-2.679 9.873-3.468 12.589-1.22 3.681-2.923 3.682-4.143 0-.79-2.716-1.966-7.276-3.469-12.589-2.9-11.122-7.46-27.674-12.767-45.474-26.7-89.559-65.48-106.82-157.96-128.75-40.25-9.543-67.18-41.137-71.706-80.8-5.956-52.17-16.111-183.25-16.111-200.96 0-88.687 77.74-60.816 125.72-24.795z" />
-                </svg>
-            </a>
-        </div>
-        <a href="/privacy" style="color: #666; text-decoration: none; border-bottom: 1px dotted #666;">Privacy
-            Policy</a>
-    </footer>
-    <script>
-        let currentCard = null;
-        let selectedColors = new Set();
-        let score = 0;
-        let lives = 3;
-        let isRevealed = false;
+            function setMode(mode) {
+                if (gameMode === mode) return; // No change
 
-        function toggleNav() {
-            document.getElementById('navLinks').classList.toggle('active');
-        }
+                // Confirm reset if in middle of game? 
+                // User requirement: "reset the game"
+                // So we always reset.
+                gameMode = mode;
 
-        function toggleColor(color) {
-            if (isRevealed) return;
+                // Toggle UI classes
+                const btns = document.querySelectorAll('.mode-toggle-btn');
+                btns.forEach(b => b.classList.remove('active'));
+                if (mode === 'color') btns[0].classList.add('active');
+                else btns[1].classList.add('active');
 
-            if (color === 'C') {
-                // Logic: Is Colorless exclusive? 
-                // In MTG identity, Colorless is usually absence of colors. 
-                // But user might want to explicitly say "This is colorless".
-                // Let's make it toggle others off if C is clicked, or C off if others clicked?
-                // Actually, let's just treat it as a toggle. If C is selected, we expect identity to be empty.
-                if (selectedColors.has('C')) {
-                    selectedColors.delete('C');
+                // Toggle Controls
+                if (mode === 'color') {
+                    document.getElementById('color-controls').style.display = 'flex';
+                    document.getElementById('name-controls').classList.remove('active');
                 } else {
-                    selectedColors.clear();
-                    selectedColors.add('C');
+                    document.getElementById('color-controls').style.display = 'none';
+                    document.getElementById('name-controls').classList.add('active');
+                    // Setup autocomplete listeners if not already?
+                    setupAutocomplete();
                 }
-            } else {
-                // If selecting a color, unselect C
-                if (selectedColors.has('C')) selectedColors.delete('C');
 
-                if (selectedColors.has(color)) {
-                    selectedColors.delete(color);
+                resetGame(); // Trigger full reset
+            }
+
+            function toggleNav() {
+                document.getElementById('navLinks').classList.toggle('active');
+            }
+
+            function toggleColor(color) {
+                if (isRevealed) return;
+
+                if (color === 'C') {
+                    // Logic: Is Colorless exclusive? 
+                    // In MTG identity, Colorless is usually absence of colors. 
+                    // But user might want to explicitly say "This is colorless".
+                    // Let's make it toggle others off if C is clicked, or C off if others clicked?
+                    // Actually, let's just treat it as a toggle. If C is selected, we expect identity to be empty.
+                    if (selectedColors.has('C')) {
+                        selectedColors.delete('C');
+                    } else {
+                        selectedColors.clear();
+                        selectedColors.add('C');
+                    }
                 } else {
-                    selectedColors.add(color);
+                    // If selecting a color, unselect C
+                    if (selectedColors.has('C')) selectedColors.delete('C');
+
+                    if (selectedColors.has(color)) {
+                        selectedColors.delete(color);
+                    } else {
+                        selectedColors.add(color);
+                    }
+                }
+                updateButtons();
+            }
+
+            function updateButtons() {
+                document.querySelectorAll('.color-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+
+                selectedColors.forEach(c => {
+                    const btn = document.querySelector(`.btn-${c.toLowerCase()}`);
+                    if (btn) btn.classList.add('selected');
+                });
+            }
+
+            async function loadCard() {
+                isRevealed = false;
+                selectedColors.clear();
+                updateButtons();
+                document.getElementById('result-message').textContent = '';
+                document.getElementById('reveal-area').style.display = 'none';
+                document.getElementById('submit-btn').disabled = false;
+                document.getElementById('submit-btn').textContent = "GUESS";
+                document.getElementById('submit-btn').textContent = "GUESS";
+                document.getElementById('loading-overlay').style.opacity = '1';
+                document.getElementById('next-btn').style.display = 'none';
+                if (gameMode === 'color') document.getElementById('submit-btn').style.display = 'block';
+
+                // Reset frame style
+                document.querySelector('.art-frame').classList.remove('revealed');
+
+                try {
+                    // Build query params
+                    const params = new URLSearchParams();
+                    params.append('new_card', 'true');
+                    params.append('mode', 'art_detective');
+
+                    const setVal = document.getElementById('setSelect').value;
+                    if (setVal) params.append('set', setVal);
+
+                    const colorVal = getFilterColors();
+                    if (colorVal) params.append('colors', colorVal);
+
+                    const formatVal = getFilterFormats();
+                    if (formatVal) params.append('formats', formatVal);
+
+                    // Add timestamp to prevent caching
+                    params.append('ts', Date.now());
+
+                    const res = await fetch('/get_card?' + params.toString());
+                    const data = await res.json();
+
+                    if (!data.art_crop) {
+                        // Formatting fallback or retry
+                        console.warn("No art crop", data);
+                        loadCard(); // Retry
+                        return;
+                    }
+
+                    currentCard = data;
+
+                    if (gameMode === 'name') {
+                        // Clear input
+                        document.getElementById('card-name-input').value = '';
+                        document.getElementById('suggestions').style.display = 'none';
+                    }
+
+                    // Preload image
+                    const img = new Image();
+                    img.onload = () => {
+                        document.getElementById('art-display').src = data.art_crop;
+                        document.getElementById('art-display').dataset.full = data.image; // Store full image URI
+                        document.getElementById('loading-overlay').style.opacity = '0';
+
+                        // Preload full image too?
+                        if (data.image) {
+                            new Image().src = data.image;
+                        }
+                    };
+                    img.src = data.art_crop;
+
+                } catch (e) {
+                    console.error("Error loading card", e);
                 }
             }
-            updateButtons();
-        }
 
-        function updateButtons() {
-            document.querySelectorAll('.color-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
+            // Autocomplete Setup
+            function setupAutocomplete() {
+                const input = document.getElementById('card-name-input');
+                const list = document.getElementById('suggestions');
 
-            selectedColors.forEach(c => {
-                const btn = document.querySelector(`.btn-${c.toLowerCase()}`);
-                if (btn) btn.classList.add('selected');
-            });
-        }
+                input.oninput = async function () {
+                    const val = this.value;
+                    if (val.length < 2) {
+                        list.style.display = 'none';
+                        return;
+                    }
 
-        async function loadCard() {
-            isRevealed = false;
-            selectedColors.clear();
-            updateButtons();
-            document.getElementById('result-message').textContent = '';
-            document.getElementById('reveal-area').style.display = 'none';
-            document.getElementById('submit-btn').disabled = false;
-            document.getElementById('submit-btn').textContent = "GUESS";
-            document.getElementById('submit-btn').textContent = "GUESS";
-            document.getElementById('loading-overlay').style.opacity = '1';
+                    try {
+                        const res = await fetch(`https://api.scryfall.com/cards/autocomplete?q=${encodeURIComponent(val)}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            showSuggestions(data.data);
+                        }
+                    } catch (e) {
+                        console.error(e);
+                    }
+                };
 
-            // Reset frame style
-            document.querySelector('.art-frame').classList.remove('revealed');
+                // Close on click outside
+                document.addEventListener('click', function (e) {
+                    if (e.target !== input && e.target !== list) {
+                        list.style.display = 'none';
+                    }
+                });
+            }
 
-            try {
-                // We reuse get_card. Note: We want 'art_detective' specific tweaks maybe?
-                // For now standard is fine. We need 'art_crop' and 'color_identity'.
-                const res = await fetch('/get_card?new_card=true&mode=art_detective');
-                const data = await res.json();
-
-                if (!data.art_crop) {
-                    // Formatting fallback or retry
-                    console.warn("No art crop", data);
-                    loadCard(); // Retry
+            function showSuggestions(names) {
+                const list = document.getElementById('suggestions');
+                list.innerHTML = '';
+                if (!names || names.length === 0) {
+                    list.style.display = 'none';
                     return;
                 }
 
-                currentCard = data;
-
-                // Preload image
-                const img = new Image();
-                img.onload = () => {
-                    document.getElementById('art-display').src = data.art_crop;
-                    document.getElementById('art-display').dataset.full = data.image; // Store full image URI
-                    document.getElementById('loading-overlay').style.opacity = '0';
-
-                    // Preload full image too?
-                    if (data.image) {
-                        new Image().src = data.image;
-                    }
-                };
-                img.src = data.art_crop;
-
-            } catch (e) {
-                console.error("Error loading card", e);
-            }
-        }
-
-        function updateLives() {
-            let hearts = "";
-            for (let i = 0; i < lives; i++) hearts += "❤️";
-            for (let i = lives; i < 3; i++) hearts += "🖤";
-            document.getElementById('lives-display').textContent = hearts;
-        }
-
-        function resetGame() {
-            lives = 3;
-            score = 0;
-            document.getElementById('score').textContent = score;
-            updateLives();
-            document.getElementById('game-over-modal').classList.remove('show');
-            loadCard(); // Start fresh
-        }
-
-        function submitGuess() {
-            if (isRevealed) {
-                loadCard(); // Next card
-                return;
+                names.forEach(name => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = name;
+                    item.onclick = function () {
+                        document.getElementById('card-name-input').value = name;
+                        list.style.display = 'none';
+                        // Optional: Auto submit? No, lets let user click GUESS button.
+                    };
+                    list.appendChild(item);
+                });
+                list.style.display = 'flex';
             }
 
-            isRevealed = true;
+            function submitNameGuess() {
+                if (isRevealed) return;
 
-            // Calculate correctness
-            // Scryfall identity is array ["U", "B"]. Empty for colorless.
-            let actual = new Set(currentCard.color_identity);
+                const input = document.getElementById('card-name-input');
+                const val = input.value.trim();
 
-            // Handle Colorless logic
-            let guessC = selectedColors.has('C');
-            // If guess is C, actual must be empty.
-            // If actual is empty, guess must be C (or empty? let's require C for colorless).
+                if (!val) return;
 
-            let correct = false;
+                // Check exact match (case insensitive)
+                const correct = val.toLowerCase() === currentCard.name.toLowerCase();
 
-            if (actual.size === 0) {
-                correct = guessC;
-            } else {
-                // Must match exactly? Or partial?
-                // "Art Detective" implies precision. Let's try Exact Match.
-                if (guessC) {
-                    correct = false;
+                handleResult(correct);
+            }
+
+            function updateLives() {
+                let hearts = "";
+                for (let i = 0; i < lives; i++) hearts += "❤️";
+                for (let i = lives; i < 3; i++) hearts += "🖤";
+                document.getElementById('lives-display').textContent = hearts;
+            }
+
+            function resetGame() {
+                lives = 3;
+                score = 0;
+                document.getElementById('score').textContent = score;
+                updateLives();
+                document.getElementById('game-over-modal').classList.remove('show');
+                loadCard(); // Start fresh
+            }
+
+            function submitGuess() {
+                if (isRevealed) {
+                    loadCard(); // Next card
+                    return;
+                }
+
+                // Calculate correctness
+                // Scryfall identity is array ["U", "B"]. Empty for colorless.
+                let actual = new Set(currentCard.color_identity);
+
+                // Handle Colorless logic
+                let guessC = selectedColors.has('C');
+                // If guess is C, actual must be empty.
+                // If actual is empty, guess must be C (or empty? let's require C for colorless).
+
+                let correct = false;
+
+                if (actual.size === 0) {
+                    correct = guessC;
                 } else {
-                    // Check sets equality
-                    if (selectedColors.size === actual.size) {
-                        correct = true;
-                        for (let c of selectedColors) {
-                            if (!actual.has(c)) {
-                                correct = false;
-                                break;
+                    // Must match exactly? Or partial?
+                    // "Art Detective" implies precision. Let's try Exact Match.
+                    if (guessC) {
+                        correct = false;
+                    } else {
+                        // Check sets equality
+                        if (selectedColors.size === actual.size) {
+                            correct = true;
+                            for (let c of selectedColors) {
+                                if (!actual.has(c)) {
+                                    correct = false;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
+
+                handleResult(correct);
+                document.getElementById('submit-btn').style.display = 'none';
             }
 
-            const msgEl = document.getElementById('result-message');
-            if (correct) {
-                score++;
-                msgEl.textContent = "✅ Correct!";
-                msgEl.style.color = "#4caf50";
-            } else {
-                msgEl.textContent = "❌ Wrong!";
-                msgEl.style.color = "#f44336";
-                lives--;
-                updateLives();
-                if (lives <= 0) {
-                    // Game Over logic triggers AFTER user sees the result? 
-                    // Or immediately? 
-                    // Let's show the result, wait a moment, then Game Over.
-                    setTimeout(() => {
-                        document.getElementById('final-score').textContent = score;
-                        document.getElementById('game-over-modal').classList.add('show');
-                    }, 1500);
+            function handleResult(isCorrect) {
+                isRevealed = true;
+                const msgEl = document.getElementById('result-message');
+
+                if (isCorrect) {
+                    score++;
+                    msgEl.textContent = "✅ Correct!";
+                    msgEl.style.color = "#4caf50";
+                } else {
+                    msgEl.textContent = "❌ Wrong!";
+                    msgEl.style.color = "#f44336";
+                    lives--;
+                    updateLives();
+                    if (lives <= 0) {
+                        setTimeout(() => {
+                            document.getElementById('final-score').textContent = score;
+                            document.getElementById('game-over-modal').classList.add('show');
+                        }, 1500);
+                    }
+                }
+                document.getElementById('score').textContent = score;
+
+                // Reveal Info
+                document.getElementById('reveal-area').style.display = 'block';
+                document.getElementById('card-name').textContent = currentCard.name;
+
+                let identityStr = currentCard.color_identity.join("");
+                if (identityStr === "") identityStr = "Colorless";
+                document.getElementById('actual-colors').textContent = `Identity: ${identityStr}`;
+
+                // Reveal Image
+                const img = document.getElementById('art-display');
+                const frame = document.querySelector('.art-frame');
+                if (img.dataset.full) {
+                    img.src = img.dataset.full;
+                    frame.classList.add('revealed');
+                }
+
+                // Show Next Button
+                document.getElementById('next-btn').style.display = 'block';
+            }
+
+            // Init
+            loadSets();
+
+            // Filter Logic
+            async function loadSets() {
+                try {
+                    const res = await fetch("/get_sets");
+                    const sets = await res.json();
+                    const select = document.getElementById("setSelect");
+                    sets.forEach(s => {
+                        const option = document.createElement("option");
+                        option.value = s.code;
+                        option.textContent = `${s.name} (${s.code.toUpperCase()})`;
+                        select.appendChild(option);
+                    });
+                } catch (e) { console.error(e); }
+            }
+
+            function toggleFilters() {
+                const container = document.getElementById('filter-container');
+                const btn = document.getElementById('filter-toggle');
+                if (container.style.display === 'none') {
+                    container.style.display = 'block';
+                    btn.style.background = 'rgba(97, 218, 251, 0.15)';
+                    btn.style.borderColor = 'rgba(97, 218, 251, 0.4)';
+                    btn.style.color = '#fff';
+                } else {
+                    container.style.display = 'none';
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
                 }
             }
-            document.getElementById('score').textContent = score;
 
-            // Reveal
-            document.getElementById('reveal-area').style.display = 'block';
-            document.getElementById('card-name').textContent = currentCard.name;
-
-            let identityStr = currentCard.color_identity.join("");
-            if (identityStr === "") identityStr = "Colorless";
-            document.getElementById('actual-colors').textContent = `Identity: ${identityStr}`;
-
-            document.getElementById('submit-btn').textContent = "Next Card";
-
-            // Show full card
-            const img = document.getElementById('art-display');
-            const frame = document.querySelector('.art-frame');
-            if (img.dataset.full) {
-                img.src = img.dataset.full;
-                frame.classList.add('revealed');
+            function resetFilters() {
+                document.getElementById('setSelect').value = "";
+                document.querySelectorAll('.color-checkbox input').forEach(checkbox => checkbox.checked = true);
+                document.querySelectorAll('.format-option').forEach(checkbox => checkbox.checked = false);
+                resetGame();
             }
-        }
 
-        // Init
-        loadCard();
+            function getFilterColors() {
+                const colors = [];
+                if (document.getElementById('colorW').checked) colors.push('W');
+                if (document.getElementById('colorU').checked) colors.push('U');
+                if (document.getElementById('colorB').checked) colors.push('B');
+                if (document.getElementById('colorR').checked) colors.push('R');
+                if (document.getElementById('colorG').checked) colors.push('G');
 
-    </script>
+                const includeColorless = document.getElementById('colorC').checked;
+
+                if (colors.length === 5 && includeColorless) return '';
+
+                let query = '';
+                if (colors.length > 0) {
+                    query = 'c<=' + colors.join('');
+                    if (!includeColorless) query += ' -c:C';
+                }
+
+                if (includeColorless && colors.length === 0) query = 'c:C';
+                else if (includeColorless && colors.length > 0) query = '(' + query + ' OR c:C)';
+                else if (!includeColorless && colors.length === 0) return ''; // Nothing selected? technically should return empty which scryfall interprets as all? or none? let's return empty.
+
+                return query;
+            }
+
+            function getFilterFormats() {
+                const selected = [];
+                document.querySelectorAll('.format-option:checked').forEach(cb => selected.push(cb.value));
+                return selected.join(',');
+            }
+
+            // Listeners for filters
+            document.getElementById("setSelect").addEventListener("change", resetGame);
+            document.querySelectorAll('.color-checkbox input').forEach(checkbox => {
+                checkbox.addEventListener('change', resetGame);
+            });
+            document.querySelectorAll('.format-option').forEach(checkbox => {
+                checkbox.addEventListener('change', resetGame);
+            });
+
+            loadCard(); // Initial Load
+
+        </script>
 </body>
 
 </html>
