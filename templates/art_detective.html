@@ -97,6 +97,11 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .art-frame.revealed {
+            aspect-ratio: 63/88;
+            max-width: 350px;
+        }
+
         .art-image {
             width: 100%;
             height: 100%;
@@ -280,6 +285,61 @@
                 display: flex;
             }
         }
+
+
+        /* Lives and Game Over */
+        .lives-container {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 5px;
+        }
+
+        .game-over-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .game-over-modal.show {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+
+        .game-over-content {
+            background: #2c313c;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .play-again-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .play-again-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
     </style>
 </head>
 
@@ -304,6 +364,7 @@
         <h1>Art Detective</h1>
 
         <div class="score-board" style="margin-bottom: 1rem; font-size: 1.2rem;">
+            <div class="lives-container" id="lives-display">❤️❤️❤️</div>
             Score: <span id="score" style="color: var(--accent); font-weight: bold;">0</span>
         </div>
 
@@ -335,6 +396,16 @@
             <div id="actual-colors"></div>
         </div>
     </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="game-over-modal">
+        <div class="game-over-content">
+            <h2 style="font-size: 3rem; margin: 0 0 1rem; color: #f44336;">Game Over</h2>
+            <p style="font-size: 1.5rem; margin-bottom: 2rem;">Final Score: <span id="final-score"
+                    style="color: var(--accent); font-weight:bold">0</span></p>
+            <button class="play-again-btn" onclick="resetGame()">Play Again ↻</button>
+        </div>
+    </div>
     <footer
         style="margin-top: 3rem; padding: 2rem; color: #666; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px solid rgba(255,255,255,0.05); width: 100%;">
         <div style="display: flex; gap: 20px;">
@@ -360,6 +431,7 @@
         let currentCard = null;
         let selectedColors = new Set();
         let score = 0;
+        let lives = 3;
         let isRevealed = false;
 
         function toggleNav() {
@@ -413,7 +485,11 @@
             document.getElementById('reveal-area').style.display = 'none';
             document.getElementById('submit-btn').disabled = false;
             document.getElementById('submit-btn').textContent = "GUESS";
+            document.getElementById('submit-btn').textContent = "GUESS";
             document.getElementById('loading-overlay').style.opacity = '1';
+
+            // Reset frame style
+            document.querySelector('.art-frame').classList.remove('revealed');
 
             try {
                 // We reuse get_card. Note: We want 'art_detective' specific tweaks maybe?
@@ -434,13 +510,35 @@
                 const img = new Image();
                 img.onload = () => {
                     document.getElementById('art-display').src = data.art_crop;
+                    document.getElementById('art-display').dataset.full = data.image; // Store full image URI
                     document.getElementById('loading-overlay').style.opacity = '0';
+
+                    // Preload full image too?
+                    if (data.image) {
+                        new Image().src = data.image;
+                    }
                 };
                 img.src = data.art_crop;
 
             } catch (e) {
                 console.error("Error loading card", e);
             }
+        }
+
+        function updateLives() {
+            let hearts = "";
+            for (let i = 0; i < lives; i++) hearts += "❤️";
+            for (let i = lives; i < 3; i++) hearts += "🖤";
+            document.getElementById('lives-display').textContent = hearts;
+        }
+
+        function resetGame() {
+            lives = 3;
+            score = 0;
+            document.getElementById('score').textContent = score;
+            updateLives();
+            document.getElementById('game-over-modal').classList.remove('show');
+            loadCard(); // Start fresh
         }
 
         function submitGuess() {
@@ -491,6 +589,17 @@
             } else {
                 msgEl.textContent = "❌ Wrong!";
                 msgEl.style.color = "#f44336";
+                lives--;
+                updateLives();
+                if (lives <= 0) {
+                    // Game Over logic triggers AFTER user sees the result? 
+                    // Or immediately? 
+                    // Let's show the result, wait a moment, then Game Over.
+                    setTimeout(() => {
+                        document.getElementById('final-score').textContent = score;
+                        document.getElementById('game-over-modal').classList.add('show');
+                    }, 1500);
+                }
             }
             document.getElementById('score').textContent = score;
 
@@ -503,6 +612,14 @@
             document.getElementById('actual-colors').textContent = `Identity: ${identityStr}`;
 
             document.getElementById('submit-btn').textContent = "Next Card";
+
+            // Show full card
+            const img = document.getElementById('art-display');
+            const frame = document.querySelector('.art-frame');
+            if (img.dataset.full) {
+                img.src = img.dataset.full;
+                frame.classList.add('revealed');
+            }
         }
 
         // Init
