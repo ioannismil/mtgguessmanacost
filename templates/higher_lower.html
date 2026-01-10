@@ -64,6 +64,7 @@
             font-weight: 500;
             transition: color 0.2s;
             opacity: 0.7;
+            white-space: nowrap;
         }
 
         .nav-link:hover,
@@ -106,6 +107,7 @@
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
                 align-items: center;
                 gap: 1rem;
+                z-index: 200;
             }
 
             .nav-links.active {
@@ -396,8 +398,10 @@
             <div class="burger-bar"></div>
         </div>
         <div class="nav-links" id="navLinks">
-            <a href="/" class="nav-link">Guess The Mana Cost</a>
+            <a href="/" class="nav-link">Guess Mana Cost</a>
             <a href="/higher_lower" class="nav-link active">Higher or Lower</a>
+            <a href="/art_detective" class="nav-link">Art Detective</a>
+            <a href="/price_is_right" class="nav-link">Price is Right</a>
         </div>
     </nav>
 

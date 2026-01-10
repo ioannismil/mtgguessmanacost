@@ -54,6 +54,7 @@ def get_card():
     selected_set = request.args.get("set", "").lower().strip()
     colors_filter = request.args.get("colors", "").strip()
     formats_filter = request.args.get("formats", "").strip()
+    game_mode = request.args.get("mode", "").lower().strip()
     
     # Build the Scryfall query
     # Optimization: Use positive filters where possible. 
@@ -62,8 +63,19 @@ def get_card():
     # game:paper (user requirement)
     # -is:funny (exclude un-sets unless requested)
     # has:mana_cost (exclude lands, suspend-only, etc)
-    query_parts = ["game:paper", "layout:normal", "has:mana_cost", "-is:funny","-type:land", "-type:token", "-is:mdfc", "-is:adventure"]
+    query_parts = ["game:paper", "layout:normal", "-is:funny","-type:token", "-is:mdfc", "-is:adventure"]
     
+    # For price is right, we need USD price. For others, we generally want mana cost.
+    # Art detective works with any card, but usually we want things with colored art (so maybe not lands? but lands have art too).
+    # Let's keep has:mana_cost for now unless it's art detective where we might want lands? 
+    # Actually, sticking to non-lands is safer for consistency with existing filters.
+    if game_mode == "price_is_right":
+        query_parts.append("has:usd")
+        query_parts.append("-type:land") # Price is right is boring with basic lands
+    else:
+         query_parts.append("has:mana_cost")
+         query_parts.append("-type:land")
+
     if selected_set:
         query_parts.append(f"set:{selected_set}")
     
@@ -104,8 +116,11 @@ def get_card():
         card = {
             "name": data["name"],
             "image": data["image_uris"]["normal"] if "image_uris" in data else None,
+            "art_crop": data["image_uris"]["art_crop"] if "image_uris" in data and "art_crop" in data["image_uris"] else None,
             "mana_cost": mana_cost,
-            "cmc": data.get("cmc", 0.0)
+            "cmc": data.get("cmc", 0.0),
+            "prices": data.get("prices", {}),
+            "color_identity": data.get("color_identity", [])
         }
 
         # Save Scryfall URI and mana cost to session
@@ -138,6 +153,15 @@ def get_sets():
     ]
 
     return jsonify(sets)
+
+@app.route("/art_detective")
+def art_detective():
+    return render_template("art_detective.html")
+
+@app.route("/price_is_right")
+def price_is_right():
+    return render_template("price_is_right.html")
+
 @app.route("/guess", methods=["POST"])
 def guess():
     user_guess = request.json["guess"].upper().replace(" ", "")

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Art Detective - MTG</title>
+    <style>
+        :root {
+            --bg-color: #20232a;
+            --text-color: #fff;
+            --accent: #61dafb;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: var(--bg-color);
+            background: radial-gradient(circle at center, #2c313c 0%, #20232a 100%);
+            color: var(--text-color);
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Navbar - reused */
+        .navbar {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: flex-start;
+            gap: 3rem;
+            align-items: center;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            opacity: 0.7;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent);
+            opacity: 1;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin: 0 0 1rem;
+            text-shadow: 0 0 20px rgba(97, 218, 251, 0.3);
+        }
+
+        .art-frame {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 4/3;
+            background: #111;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .art-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: filter 0.3s;
+        }
+
+        .art-image.censored {
+            /* Maybe blur or pixelate slightly? No, that ruins the "Art" detective part. 
+               The challenge is the art itself gives clues. */
+            filter: grayscale(0.2) contrast(1.1);
+            /* Slight mood */
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+            align-items: center;
+        }
+
+        .color-toggles {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            opacity: 0.6;
+            filter: grayscale(0.8);
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .color-btn.selected {
+            opacity: 1;
+            transform: scale(1.15);
+            filter: grayscale(0);
+            box-shadow: 0 0 15px currentColor;
+            border-color: #fff;
+        }
+
+        /* MTG Colors */
+        .btn-w {
+            background: #f8e7b9;
+            color: #f8e7b9;
+        }
+
+        .btn-u {
+            background: #0e68ab;
+            color: #0e68ab;
+        }
+
+        .btn-b {
+            background: #150b00;
+            color: #a69f9d;
+            /* Swampy black */
+        }
+
+        .btn-r {
+            background: #d3202a;
+            color: #d3202a;
+        }
+
+        .btn-g {
+            background: #00733e;
+            color: #00733e;
+        }
+
+        .btn-c {
+            background: #ccc;
+            color: #ccc;
+            position: relative;
+        }
+
+        /* Icons */
+        .color-symbol {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.7);
+            user-select: none;
+        }
+
+        .btn-b .color-symbol {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .submit-btn {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(97, 218, 251, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-panel {
+            margin-top: 1rem;
+            min-height: 60px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .reveal-info {
+            display: none;
+            margin-top: 10px;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        /* Burger Menu (copied) */
+        .burger-menu {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .burger-bar {
+            width: 25px;
+            height: 3px;
+            background-color: #fff;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                justify-content: space-between;
+                gap: 0;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                flex-direction: column;
+                background: #2c313c;
+                padding: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .burger-menu {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="nav-brand">MTG Puzzles</a>
+        <div class="burger-menu" onclick="toggleNav()">
+            <div class="burger-bar"></div>
+            <div class="burger-bar"></div>
+            <div class="burger-bar"></div>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="/" class="nav-link">Guess Mana</a>
+            <a href="/higher_lower" class="nav-link">Higher/Lower</a>
+            <a href="/art_detective" class="nav-link active">Art Detective</a>
+            <a href="/price_is_right" class="nav-link">Price is Right</a>
+        </div>
+    </nav>
+
+    <div class="game-container">
+        <h1>Art Detective</h1>
+
+        <div class="score-board" style="margin-bottom: 1rem; font-size: 1.2rem;">
+            Score: <span id="score" style="color: var(--accent); font-weight: bold;">0</span>
+        </div>
+
+        <div class="art-frame">
+            <img id="art-display" class="art-image" src="" alt="Mystery Art">
+            <div id="loading-overlay"
+                style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; opacity:0; transition:opacity 0.2s;">
+                <span>Loading...</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div style="color: #ccc; margin-bottom: -10px;">Select Color Identity:</div>
+            <div class="color-toggles">
+                <div class="color-btn btn-w" onclick="toggleColor('W')"><span class="color-symbol">W</span></div>
+                <div class="color-btn btn-u" onclick="toggleColor('U')"><span class="color-symbol">U</span></div>
+                <div class="color-btn btn-b" onclick="toggleColor('B')"><span class="color-symbol">B</span></div>
+                <div class="color-btn btn-r" onclick="toggleColor('R')"><span class="color-symbol">R</span></div>
+                <div class="color-btn btn-g" onclick="toggleColor('G')"><span class="color-symbol">G</span></div>
+                <div class="color-btn btn-c" onclick="toggleColor('C')"><span class="color-symbol">◇</span></div>
+            </div>
+
+            <button id="submit-btn" class="submit-btn" onclick="submitGuess()">GUESS</button>
+        </div>
+
+        <div class="result-panel" id="result-message"></div>
+        <div class="reveal-info" id="reveal-area">
+            <div id="card-name" style="color: #fff; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;"></div>
+            <div id="actual-colors"></div>
+        </div>
+    </div>
+    <footer
+        style="margin-top: 3rem; padding: 2rem; color: #666; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px solid rgba(255,255,255,0.05); width: 100%;">
+        <div style="display: flex; gap: 20px;">
+            <a href="https://x.com/ioannis_mtd" target="_blank" title="X (Twitter)"
+                style="color: #888; text-decoration: none; display: flex; align-items: center; transition: color 0.2s;">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path
+                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+            </a>
+            <a href="https://bsky.app/profile/ioannismi.bsky.social" target="_blank" title="Bluesky"
+                style="color: #888; text-decoration: none; display: flex; align-items: center; transition: color 0.2s;">
+                <svg viewBox="0 0 600 530" width="24" height="24" fill="currentColor">
+                    <path
+                        d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 200.96-4.526 39.663-31.455 71.257-71.706 80.8-92.488 21.93-131.26 39.187-157.96 128.75-5.307 17.799-9.859 34.346-12.758 45.468-1.503 5.313-2.679 9.873-3.468 12.589-1.22 3.681-2.923 3.682-4.143 0-.79-2.716-1.966-7.276-3.469-12.589-2.9-11.122-7.46-27.674-12.767-45.474-26.7-89.559-65.48-106.82-157.96-128.75-40.25-9.543-67.18-41.137-71.706-80.8-5.956-52.17-16.111-183.25-16.111-200.96 0-88.687 77.74-60.816 125.72-24.795z" />
+                </svg>
+            </a>
+        </div>
+        <a href="/privacy" style="color: #666; text-decoration: none; border-bottom: 1px dotted #666;">Privacy
+            Policy</a>
+    </footer>
+    <script>
+        let currentCard = null;
+        let selectedColors = new Set();
+        let score = 0;
+        let isRevealed = false;
+
+        function toggleNav() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        function toggleColor(color) {
+            if (isRevealed) return;
+
+            if (color === 'C') {
+                // Logic: Is Colorless exclusive? 
+                // In MTG identity, Colorless is usually absence of colors. 
+                // But user might want to explicitly say "This is colorless".
+                // Let's make it toggle others off if C is clicked, or C off if others clicked?
+                // Actually, let's just treat it as a toggle. If C is selected, we expect identity to be empty.
+                if (selectedColors.has('C')) {
+                    selectedColors.delete('C');
+                } else {
+                    selectedColors.clear();
+                    selectedColors.add('C');
+                }
+            } else {
+                // If selecting a color, unselect C
+                if (selectedColors.has('C')) selectedColors.delete('C');
+
+                if (selectedColors.has(color)) {
+                    selectedColors.delete(color);
+                } else {
+                    selectedColors.add(color);
+                }
+            }
+            updateButtons();
+        }
+
+        function updateButtons() {
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            selectedColors.forEach(c => {
+                const btn = document.querySelector(`.btn-${c.toLowerCase()}`);
+                if (btn) btn.classList.add('selected');
+            });
+        }
+
+        async function loadCard() {
+            isRevealed = false;
+            selectedColors.clear();
+            updateButtons();
+            document.getElementById('result-message').textContent = '';
+            document.getElementById('reveal-area').style.display = 'none';
+            document.getElementById('submit-btn').disabled = false;
+            document.getElementById('submit-btn').textContent = "GUESS";
+            document.getElementById('loading-overlay').style.opacity = '1';
+
+            try {
+                // We reuse get_card. Note: We want 'art_detective' specific tweaks maybe?
+                // For now standard is fine. We need 'art_crop' and 'color_identity'.
+                const res = await fetch('/get_card?new_card=true&mode=art_detective');
+                const data = await res.json();
+
+                if (!data.art_crop) {
+                    // Formatting fallback or retry
+                    console.warn("No art crop", data);
+                    loadCard(); // Retry
+                    return;
+                }
+
+                currentCard = data;
+
+                // Preload image
+                const img = new Image();
+                img.onload = () => {
+                    document.getElementById('art-display').src = data.art_crop;
+                    document.getElementById('loading-overlay').style.opacity = '0';
+                };
+                img.src = data.art_crop;
+
+            } catch (e) {
+                console.error("Error loading card", e);
+            }
+        }
+
+        function submitGuess() {
+            if (isRevealed) {
+                loadCard(); // Next card
+                return;
+            }
+
+            isRevealed = true;
+
+            // Calculate correctness
+            // Scryfall identity is array ["U", "B"]. Empty for colorless.
+            let actual = new Set(currentCard.color_identity);
+
+            // Handle Colorless logic
+            let guessC = selectedColors.has('C');
+            // If guess is C, actual must be empty.
+            // If actual is empty, guess must be C (or empty? let's require C for colorless).
+
+            let correct = false;
+
+            if (actual.size === 0) {
+                correct = guessC;
+            } else {
+                // Must match exactly? Or partial?
+                // "Art Detective" implies precision. Let's try Exact Match.
+                if (guessC) {
+                    correct = false;
+                } else {
+                    // Check sets equality
+                    if (selectedColors.size === actual.size) {
+                        correct = true;
+                        for (let c of selectedColors) {
+                            if (!actual.has(c)) {
+                                correct = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            const msgEl = document.getElementById('result-message');
+            if (correct) {
+                score++;
+                msgEl.textContent = "✅ Correct!";
+                msgEl.style.color = "#4caf50";
+            } else {
+                msgEl.textContent = "❌ Wrong!";
+                msgEl.style.color = "#f44336";
+            }
+            document.getElementById('score').textContent = score;
+
+            // Reveal
+            document.getElementById('reveal-area').style.display = 'block';
+            document.getElementById('card-name').textContent = currentCard.name;
+
+            let identityStr = currentCard.color_identity.join("");
+            if (identityStr === "") identityStr = "Colorless";
+            document.getElementById('actual-colors').textContent = `Identity: ${identityStr}`;
+
+            document.getElementById('submit-btn').textContent = "Next Card";
+        }
+
+        // Init
+        loadCard();
+
+    </script>
+</body>
+
+</html>
