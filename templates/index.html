@@ -1228,25 +1228,14 @@
       document.getElementById("score").textContent = "0";
       document.getElementById("streak").textContent = "0";
       document.getElementById("message").textContent = "New filter selected — game restarting!";
-      preloadedCardPromise = null;
+      // preloadedCardPromise = null; // Removed queue/preload reference
       currentGuess = [];
 
       document.getElementById("message").textContent = "New filter selected — game restarting!";
       document.getElementById("message").textContent = "New filter selected — game restarting!";
       currentGuess = [];
-
-      // Clear queue for new filters
-      cardQueue = [];
-
-      // Clear history
-      document.getElementById("history-list").innerHTML = "";
-      document.getElementById("history-section").style.display = "none";
-
-      renderGuess();
 
       // Start fresh
-      document.getElementById("card-wrapper").classList.add("loading");
-      await fillQueue();
       loadNextCard();
     }
 
@@ -1266,41 +1255,22 @@
     let buttonsDisabled = false;
     let gameOver = false;
 
-    // Queue System
-    let cardQueue = [];
-    const QUEUE_SIZE = 1;
-
     // Timed Mode Globals
     let isTimedMode = false;
     let timeLeft = 60;
     let timerInterval = null;
 
-    async function fillQueue() {
-      while (cardQueue.length < QUEUE_SIZE) {
-        try {
-          // Fetch in background
-          const card = await fetchCardData(true);
-          if (card) cardQueue.push(card);
-        } catch (e) {
-          console.error("Queue fill error", e);
-          break; // Stop trying if error
-        }
-      }
-    }
-
     async function loadNextCard() {
-      // Ensure we have cards
-      if (cardQueue.length === 0) {
-        await fillQueue();
-      }
-
-      if (cardQueue.length > 0) {
-        const card = cardQueue.shift();
-        renderCard(card);
-        fillQueue(); // Refill in background
-      } else {
-        // Fallback if queue failed
-        loadCard(true);
+      document.getElementById("card-wrapper").classList.add("loading");
+      try {
+        const card = await fetchCardData(true);
+        if (card) {
+          renderCard(card);
+        }
+      } catch (e) {
+        console.error("Error loading card:", e);
+        document.getElementById("message").textContent = "Error loading card. Please try again.";
+        document.getElementById("card-wrapper").classList.remove("loading");
       }
     }
 
@@ -1343,14 +1313,7 @@
         stopTimer();
       }
 
-      // Initialize Queue
-      cardQueue = []; // Clear old queue
-      // Show loading...
-      document.getElementById("card-wrapper").classList.add("loading");
-      document.getElementById("card-wrapper").innerHTML = "";
-
-      await fillQueue(); // Wait for at least 3 cards (or as many as possible)
-
+      // Load first card
       loadNextCard();
     }
 
@@ -1533,9 +1496,6 @@
 
     // Kept for compatibility but redirects to queue
     async function loadCard(forceNew = false) {
-      // If it's a "reset" type load (forceNew=true usually implies start of game or explicit skip)
-      // We cleared queue in reset functions, so this might need to just fetch one if queue empty.
-      if (cardQueue.length === 0) await fillQueue();
       loadNextCard();
     }
 
@@ -1607,9 +1567,7 @@
 
       // Preload next card if game is not over
       if (!result.game_over) {
-        // Queue is handled automatically by loadNextCard() refiling, 
-        // but we can ensure it's topped up here.
-        fillQueue();
+        // fillQueue(); // Removed queue/preload reference
 
         // In Timed Mode, Auto-Advance
         if (isTimedMode) {
