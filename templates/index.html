@@ -878,9 +878,17 @@
   </button>
 
   <div id="filter-container" class="filter-container" style="display:none;">
-    <div style="margin-bottom: 1rem;">
-      <button id="btn-normal" class="mode-btn active" onclick="switchMode('normal')">Normal Mode</button>
-      <button id="btn-timed" class="mode-btn" onclick="switchMode('timed')">60s Rush</button>
+    <div
+      style="margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
+      <div>
+        <button id="btn-normal" class="mode-btn active" onclick="switchMode('normal')">Normal Mode</button>
+        <button id="btn-timed" class="mode-btn" onclick="switchMode('timed')">60s Rush</button>
+      </div>
+      <label class="mode-toggle"
+        style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #ccc; background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+        <input type="checkbox" id="anagramToggle" style="width: 16px; height: 16px; cursor: pointer;">
+        Allow Anagrams
+      </label>
     </div>
     <div class="set-filter">
       <label for="setSelect">Filter by Set:</label>
@@ -1472,22 +1480,29 @@
             if (isTimedMode && timeLeft > 0 && !gameOver) {
               startTimer();
             }
+
+            document.getElementById("message").textContent = "";
+            clearGuess();
+            enableAllButtons();
+            hideNextButton();
+            gameOver = false;
           };
 
           img.onerror = () => {
             cardWrapper.classList.remove("loading");
             cardWrapper.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">Failed to load card</div>`;
+            enableAllButtons();
+            hideNextButton();
           };
         } else {
           cardWrapper.classList.remove("loading");
           cardWrapper.innerHTML = `<div id="mana_symbol" class="hide-mana-cost"></div>`;
+          document.getElementById("message").textContent = "";
+          clearGuess();
+          enableAllButtons();
+          hideNextButton();
+          gameOver = false;
         }
-
-        document.getElementById("message").textContent = "";
-        clearGuess();
-        enableAllButtons();
-        hideNextButton();
-        gameOver = false;
 
       } catch (err) {
         // handle error
@@ -1525,14 +1540,19 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           guess,
-          actual_mana_cost: currentCardData.mana_cost
+          actual_mana_cost: currentCardData.mana_cost,
+          allow_anagrams: document.getElementById("anagramToggle").checked
         })
       });
 
       // Pause timer immediately
       if (isTimedMode) stopTimer();
 
-      document.getElementById("mana_symbol").className = 'show-mana-cost';
+      const manaSymbolEl = document.getElementById("mana_symbol");
+      if (manaSymbolEl) {
+        manaSymbolEl.className = 'show-mana-cost';
+      }
+
       const result = await res.json();
 
       // Show the result message
