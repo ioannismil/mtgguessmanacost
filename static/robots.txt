@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Disallow API endpoints (not useful for search engines)
+Disallow: /get_card
+Disallow: /get_sets
+Disallow: /reset_game
+Disallow: /reset
+Disallow: /guess
+
+# Sitemap location
+Sitemap: https://mtgtrivia.xyz/sitemap.xml
