@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session,send_file
 import requests
 import re
 
@@ -37,7 +37,7 @@ def robots():
 
 @app.route("/sitemap.xml")
 def sitemap():
-    return app.send_static_file("sitemap.xml")
+    return send_file('static/sitemap.xml', mimetype='application/xml')
 
 @app.route("/favicon.ico")
 def favicon():
