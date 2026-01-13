@@ -1,0 +1,8 @@
+Input: {1}{W}{U}       | Result: {1}{U}{W}       | Pass: True
+Input: {W}{U}{1}       | Result: {1}{U}{W}       | Pass: True
+Input: {R}{R}{G}       | Result: {G}{R}{R}       | Pass: True
+Input: {10}{W}         | Result: {10}{W}         | Pass: True
+Input: {W}{10}         | Result: {10}{W}         | Pass: True
+Input: {W}{U}{B}{R}{G} | Result: {B}{G}{R}{U}{W} | Pass: True
+Input:                 | Result:                 | Pass: True
+Input: 1WU             | Result: 1WU             | Pass: True

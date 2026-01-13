@@ -2,6 +2,16 @@ from flask import Flask, render_template, request, jsonify, session,send_file
 import requests
 import re
 
+def normalize_mana_cost(cost):
+    if not cost:
+        return ""
+    # Extract all symbols in braces, sort them, and join them back
+    symbols = re.findall(r"\{[^}]+\}", cost)
+    if not symbols:
+        return cost
+    symbols.sort()
+    return "".join(symbols)
+
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
 
@@ -79,8 +89,8 @@ def get_card():
     # game:paper (user requirement)
     # -is:funny (exclude un-sets unless requested)
     # has:mana_cost (exclude lands, suspend-only, etc)
-    query_parts = ["game:paper", "layout:normal", "-is:funny","-type:token", "-is:mdfc", "-is:adventure"]
-    # query_parts = ["is:hybrid"]
+    # query_parts = ["game:paper", "layout:normal", "-is:funny","-type:token", "-is:mdfc", "-is:adventure"]
+    query_parts = ["is:hybrid"]
     
     # For price is right, we need USD price. For others, we generally want mana cost.
     # Art detective works with any card, but usually we want things with colored art (so maybe not lands? but lands have art too).
@@ -181,15 +191,23 @@ def price_is_right():
 
 @app.route("/guess", methods=["POST"])
 def guess():
-    user_guess = request.json["guess"].upper().replace(" ", "")
+    user_guess = request.json["guess"].upper().replace(" ", "").replace("/", "")
     
     # Stateless validation: prefer mana cost sent by client (for queue/prefetch scenarios)
     if "actual_mana_cost" in request.json:
         correct_cost = request.json["actual_mana_cost"].upper().replace(" ", "").replace("/", "")
     else:
         correct_cost = session.get("current_mana_cost", "").replace("/", "")
+
+    allow_anagrams = request.json.get("allow_anagrams", False)
+    
+    if allow_anagrams:
+        is_correct = normalize_mana_cost(user_guess) == normalize_mana_cost(correct_cost)
+    else:
+        is_correct = user_guess == correct_cost
+
     result = {}
-    if user_guess == correct_cost:
+    if is_correct:
         session["score"] += 1
         session["streak"] = session.get("streak", 0) + 1
         result["correct"] = True
