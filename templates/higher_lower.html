@@ -516,10 +516,6 @@
 
         let nextCardPromise = null; // Deprecated by queue
 
-        // Queue System
-        let cardQueue = [];
-        const QUEUE_SIZE = 3;
-
         // Fetch a new random card
         async function fetchCard() {
             try {
@@ -550,56 +546,24 @@
             initGame();
         }
 
-        // Queue System
-
-        async function fillQueue() {
-            while (cardQueue.length < QUEUE_SIZE) {
-                try {
-                    const card = await fetchCard();
-                    if (card) cardQueue.push(card);
-                } catch (e) {
-                    console.error("Queue fill error", e);
-                    break;
-                }
-            }
-        }
-
         async function initGame() {
             score = 0;
             updateScore();
             stopTimer();
 
-            // Clear Queue
-            cardQueue = [];
+            isLoading = true;
 
             // Show loading on both slots
             document.getElementById('left-slot').classList.add('loading');
             document.getElementById('right-slot').classList.add('loading');
 
-            // Wait for enough cards to start (need 2 immediately, plus buffer)
-            // We can fetch 3, use 2, keep 1 in queue.
-            await fillQueue();
+            // Fetch two cards directly
+            [leftCard, rightCard] = await Promise.all([fetchCard(), fetchCard()]);
 
             document.getElementById('left-slot').classList.remove('loading');
             document.getElementById('right-slot').classList.remove('loading');
 
-            if (cardQueue.length < 2) {
-                // Critical failure, try fetching explicitly
-                leftCard = await fetchCard();
-                rightCard = await fetchCard();
-            } else {
-                leftCard = cardQueue.shift();
-                rightCard = cardQueue.shift();
-                // Queue now has 1 or more cards (fillQueue runs in background if we call it again)
-                fillQueue();
-            }
-
-            // Ensure they actally loaded
-            if (!leftCard) leftCard = await fetchCard();
-            if (!rightCard) rightCard = await fetchCard();
-
             // Ensure they aren't the same card (unlikely but possible)
-            // Simple check, if same, just fetch a new right card standard way
             while (leftCard && rightCard && leftCard.name === rightCard.name) {
                 rightCard = await fetchCard();
             }
@@ -607,7 +571,6 @@
             if (isTimedMode) {
                 timeLeft = 60;
                 updateTimerDisplay();
-                // We don't start timer yet, wait for render
             }
 
             // Notify backend of reset (and mode)
@@ -653,24 +616,15 @@
             // Move Right card to Left
             leftCard = rightCard;
 
-            // Get next from Queue
-            if (cardQueue.length === 0) {
-                // Queue Empty? Show loading on right slot
-                document.getElementById('right-slot').classList.add('loading');
-                rightCard = await fetchCard();
-                document.getElementById('right-slot').classList.remove('loading');
-
-                fillQueue(); // Trigger refill
-            } else {
-                rightCard = cardQueue.shift();
-                fillQueue(); // Trigger refill
-            }
+            // Show loading on right slot
+            document.getElementById('right-slot').classList.add('loading');
+            rightCard = await fetchCard();
+            document.getElementById('right-slot').classList.remove('loading');
 
             if (rightCard) {
                 render();
             } else {
                 // If fetch failed, try one more time or alert?
-                // For now, reset loading so user isn't stuck 
                 isLoading = false;
                 alert("Failed to load next card. Please refresh.");
             }
@@ -742,9 +696,7 @@
                 updateScore();
 
                 // PERFORMANCE: Start fetching *immediately* while animation plays
-                // Queue handles this automatically via nextRound -> fillQueue
-                // But we can trigger a fill check here just in case
-                fillQueue();
+                // nextRound will handle the fetch now.
 
                 setTimeout(nextRound, 1500); // Wait 1.5s to show result then next
             } else {
@@ -757,8 +709,6 @@
                 if (isTimedMode) {
                     // Wait to show X, then NEXT card, don't reset score, just time/streak penalty
                     // Since we are scoring by "Total Correct", we just move on.
-                    // nextCardPromise = fetchCard(); // Queue handles it
-                    fillQueue();
                     setTimeout(nextRound, 1500);
                 } else {
                     setTimeout(gameOver, 1500);
