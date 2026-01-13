@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTG Trivia - FAQ</title>
+    <style>
+        :root {
+            --bg-color: #20232a;
+            --text-color: #fff;
+            --accent: #61dafb;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background: radial-gradient(circle at center, #2c313c 0%, #20232a 100%);
+            color: var(--text-color);
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: flex-start;
+            gap: 3rem;
+            align-items: center;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent);
+            opacity: 1;
+            text-decoration: none;
+        }
+
+        .burger-menu {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .burger-bar {
+            width: 25px;
+            height: 3px;
+            background-color: #fff;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                justify-content: space-between;
+                gap: 0;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                flex-direction: column;
+                background: #2c313c;
+                padding: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                align-items: center;
+                gap: 1rem;
+                z-index: 200;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .burger-menu {
+                display: flex;
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        h1 {
+            color: var(--accent);
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            color: var(--accent);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            font-size: 1.8rem;
+        }
+
+        h3 {
+            color: #fff;
+            margin-top: 1.5rem;
+            font-size: 1.3rem;
+        }
+
+        p {
+            margin: 1rem 0;
+            color: #ccc;
+        }
+
+        ul {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin: 0.5rem 0;
+            color: #ccc;
+        }
+
+        strong {
+            color: #fff;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .highlight-box {
+            background: rgba(97, 218, 251, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">MTG Trivia</a>
+        <div class="burger-menu" onclick="toggleNav()">
+            <div class="burger-bar"></div>
+            <div class="burger-bar"></div>
+            <div class="burger-bar"></div>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="/" class="nav-link">Guess Mana Cost</a>
+            <a href="/higher_lower" class="nav-link">Higher or Lower</a>
+            <a href="/art_detective" class="nav-link">Art Detective</a>
+            <a href="/price_is_right" class="nav-link">Price is Right</a>
+            <a href="/faq" class="nav-link active">FAQ</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Frequently Asked Questions</h1>
+
+        <h2>Where do you get the card data?</h2>
+        <p>All card information, images, and prices come from the <strong><a href="https://scryfall.com"
+                    target="_blank">Scryfall API</a></strong>. Scryfall is a comprehensive Magic: The Gathering card
+            search engine that provides high-quality card data, images, and pricing information.</p>
+
+        <div class="highlight-box">
+            <strong>What is Scryfall?</strong><br>
+            Scryfall is a free, community-supported database that indexes every Magic: The Gathering card ever printed.
+            It's widely used by players, collectors, and developers for accurate and up-to-date card information.
+        </div>
+
+        <h2>What filters are you using?</h2>
+        <p>We use several filters to ensure you get the best gameplay experience. Here's what we filter and why:</p>
+
+        <h3>Cards We Include:</h3>
+        <ul>
+            <li><strong>Paper-legal cards</strong> - Only cards that exist in physical form (no digital-only cards)</li>
+            <li><strong>Normal layout cards</strong> - Standard single-faced cards that are easy to read and play</li>
+            <li><strong>Cards with mana costs</strong> - Cards you can actually cast (excludes lands and special cards)
+            </li>
+        </ul>
+
+        <h3>Cards We Exclude:</h3>
+        <ul>
+            <li><strong>Tokens</strong> - These aren't cast from your hand</li>
+            <li><strong>Funny cards (Un-sets)</strong> - Cards from joke sets like Unglued and Unhinged</li>
+            <li><strong>Lands</strong> - Basic lands don't have mana costs</li>
+            <li><strong>Double-faced cards</strong> - Cards that transform can be confusing for trivia</li>
+            <li><strong>Adventure cards</strong> - Cards with multiple casting options</li>
+            <li><strong>Promotional and memorabilia items</strong> - Special printings that aren't standard game pieces
+            </li>
+        </ul>
+
+        <h3>Your Custom Filters:</h3>
+        <p>You can further customize which cards appear using these filters:</p>
+        <ul>
+            <li><strong>Set Filter</strong> - Choose cards from specific Magic sets or expansions (e.g., only cards from
+                "Foundations" or "Modern Horizons 3")</li>
+            <li><strong>Color Filter</strong> - Select which mana colors you want to see:
+                <ul>
+                    <li>White (W) ⚪</li>
+                    <li>Blue (U) 🔵</li>
+                    <li>Black (B) ⚫</li>
+                    <li>Red (R) 🔴</li>
+                    <li>Green (G) 🟢</li>
+                    <li>Colorless (C) ⬜</li>
+                </ul>
+            </li>
+            <li><strong>Format Filter</strong> - Filter by format legality (Standard, Modern, Commander, Legacy,
+                Vintage, etc.). This shows only cards that are legal in your chosen format(s)</li>
+        </ul>
+
+        <h2>Do you save any user data?</h2>
+        <p><strong>No, we do not save any personal user data on our servers.</strong></p>
+
+        <div class="highlight-box">
+            <strong>What we DON'T collect:</strong><br>
+            Names, email addresses, or contact information<br>
+            Account information (no login required)<br>
+            Game history or scores on our servers<br>
+            Personal identifiable information of any kind
+        </div>
+
+        <p><strong>What stays on YOUR device:</strong></p>
+        <ul>
+            <li>Your current game session (lives, score, streak) - stored temporarily in your browser</li>
+            <li>Your filter preferences - saved in browser local storage for convenience</li>
+            <li>Keyboard shortcut settings - saved locally so you don't have to reconfigure them</li>
+        </ul>
+
+        <p>All of this data stays on your device and is never sent to our servers. If you clear your browser data, these
+            preferences will be reset.</p>
+
+        <p>For more details, please see our <a href="/privacy">Privacy Policy</a>.</p>
+
+        <h2>Have more questions?</h2>
+        <p>If you have additional questions or feedback about MTG Trivia, feel free to reach out or check out the
+            individual game modes to learn more!</p>
+    </div>
+
+    <script>
+        function toggleNav() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+    </script>
+</body>
+
+</html>

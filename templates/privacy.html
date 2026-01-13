@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - Guess the Mana Cost</title>
+    <title>MTG Trivia - Privacy Policy</title>
     <style>
         :root {
             --bg-color: #20232a;
@@ -14,7 +14,7 @@
 
         body {
             margin: 0;
-            padding: 2rem;
+            padding: 0;
             background-color: var(--bg-color);
             background: radial-gradient(circle at center, #2c313c 0%, #20232a 100%);
             color: var(--text-color);
@@ -22,11 +22,101 @@
             line-height: 1.6;
         }
 
+        /* Navbar Styles */
+        .navbar {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: flex-start;
+            gap: 3rem;
+            align-items: center;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent);
+            opacity: 1;
+        }
+
+        .burger-menu {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .burger-bar {
+            width: 25px;
+            height: 3px;
+            background-color: #fff;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                justify-content: space-between;
+                gap: 0;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                flex-direction: column;
+                background: #2c313c;
+                padding: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                align-items: center;
+                gap: 1rem;
+                z-index: 200;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .burger-menu {
+                display: flex;
+            }
+        }
+
         .container {
             max-width: 800px;
-            margin: 0 auto;
-            background: rgba(0, 0, 0, 0.25);
+            margin: 2rem auto;
             padding: 2rem;
+            background: rgba(0, 0, 0, 0.25);
             border-radius: 15px;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
@@ -60,8 +150,24 @@
 </head>
 
 <body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">MTG Trivia</a>
+        <div class="burger-menu" onclick="toggleNav()">
+            <div class="burger-bar"></div>
+            <div class="burger-bar"></div>
+            <div class="burger-bar"></div>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="/" class="nav-link">Guess Mana Cost</a>
+            <a href="/higher_lower" class="nav-link">Higher or Lower</a>
+            <a href="/art_detective" class="nav-link">Art Detective</a>
+            <a href="/price_is_right" class="nav-link">Price is Right</a>
+            <a href="/faq" class="nav-link">FAQ</a>
+            <a href="/privacy" class="nav-link active">Privacy</a>
+        </div>
+    </nav>
+
     <div class="container">
-        <a href="/" class="back-link">← Back to Game</a>
 
         <h1>Privacy Policy</h1>
 
@@ -89,6 +195,12 @@
         <h2>Contact Us</h2>
         <p>If you have any questions about this privacy policy, please contact us.</p>
     </div>
+
+    <script>
+        function toggleNav() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+    </script>
 </body>
 
 </html>
