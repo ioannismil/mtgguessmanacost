@@ -89,8 +89,8 @@ def get_card():
     # game:paper (user requirement)
     # -is:funny (exclude un-sets unless requested)
     # has:mana_cost (exclude lands, suspend-only, etc)
-    # query_parts = ["game:paper", "layout:normal", "-is:funny","-type:token", "-is:mdfc", "-is:adventure"]
-    query_parts = ["is:hybrid"]
+    query_parts = ["game:paper", "layout:normal", "-is:funny","-type:token", "-is:mdfc", "-is:adventure"]
+    # query_parts = ["is:hybrid"]
     
     # For price is right, we need USD price. For others, we generally want mana cost.
     # Art detective works with any card, but usually we want things with colored art (so maybe not lands? but lands have art too).
