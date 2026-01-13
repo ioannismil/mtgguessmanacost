@@ -39,6 +39,10 @@ def robots():
 def sitemap():
     return app.send_static_file("sitemap.xml")
 
+@app.route("/favicon.ico")
+def favicon():
+    return app.send_static_file("favicon.ico")
+
 @app.route("/reset_game", methods=["POST"])
 def reset_game():
     data = request.get_json() or {}

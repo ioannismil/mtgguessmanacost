@@ -17,10 +17,26 @@
     <meta property="og:url" content="https://mtgtrivia.xyz/">
     <meta property="og:site_name" content="MTG Trivia">
 
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="MTG Trivia – Free MTG Quiz Games">
     <meta name="twitter:description"
         content="Four Magic: The Gathering trivia games to test your card knowledge, art recognition, and pricing skills.">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "MTG Trivia - Art Detective",
+      "operatingSystem": "Web",
+      "applicationCategory": "GameApplication",
+      "genre": "Trivia",
+      "description": "A Magic: The Gathering Art Detective game where you identify cards based on their artwork.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "url": "https://mtgtrivia.xyz/art_detective"
+    }
+    </script>
     <style>
         :root {
             --bg-color: #20232a;
@@ -1215,6 +1231,7 @@
                 const frame = document.querySelector('.art-frame');
                 if (img.dataset.full) {
                     img.src = img.dataset.full;
+                    img.alt = currentCard.name;
                     frame.classList.add('revealed');
                 }
 

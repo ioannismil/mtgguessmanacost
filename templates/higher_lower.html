@@ -21,6 +21,24 @@
     <meta name="twitter:title" content="MTG Trivia – Free MTG Quiz Games">
     <meta name="twitter:description"
         content="Four Magic: The Gathering trivia games to test your card knowledge, art recognition, and pricing skills.">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "MTG Trivia - Higher or Lower",
+      "operatingSystem": "Web",
+      "applicationCategory": "GameApplication",
+      "genre": "Trivia",
+      "description": "A Magic: The Gathering Higher or Lower game where you guess if the next card has a higher or lower mana value.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "url": "https://mtgtrivia.xyz/higher_lower"
+    }
+    </script>
     <style>
         :root {
             --bg-color: #20232a;
@@ -606,11 +624,15 @@
             if (!leftCard || !rightCard) return;
 
             // Left Card
-            document.getElementById('img-left').src = leftCard.image;
+            const imgLeft = document.getElementById('img-left');
+            imgLeft.src = leftCard.image;
+            imgLeft.alt = leftCard.name;
             document.getElementById('cmc-left').textContent = leftCard.cmc;
 
             // Right Card
-            document.getElementById('img-right').src = rightCard.image;
+            const imgRight = document.getElementById('img-right');
+            imgRight.src = rightCard.image;
+            imgRight.alt = rightCard.name;
             document.getElementById('cmc-right').textContent = rightCard.cmc;
 
             // Reset Right visuals

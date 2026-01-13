@@ -17,10 +17,26 @@
     <meta property="og:url" content="https://mtgtrivia.xyz/">
     <meta property="og:site_name" content="MTG Trivia">
 
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="MTG Trivia – Free MTG Quiz Games">
     <meta name="twitter:description"
         content="Four Magic: The Gathering trivia games to test your card knowledge, art recognition, and pricing skills.">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "MTG Trivia - Price is Right",
+      "operatingSystem": "Web",
+      "applicationCategory": "GameApplication",
+      "genre": "Trivia",
+      "description": "A Magic: The Gathering Price is Right game where you guess the market value of cards.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "url": "https://mtgtrivia.xyz/price_is_right"
+    }
+    </script>
     <style>
         :root {
             --bg-color: #20232a;
@@ -420,11 +436,15 @@
             if (!leftCard || !rightCard) return;
 
             // Left
-            document.getElementById('img-left').src = leftCard.image;
+            const imgLeft = document.getElementById('img-left');
+            imgLeft.src = leftCard.image;
+            imgLeft.alt = leftCard.name;
             document.getElementById('price-left').textContent = getPrice(leftCard).toFixed(2);
 
             // Right
-            document.getElementById('img-right').src = rightCard.image;
+            const imgRight = document.getElementById('img-right');
+            imgRight.src = rightCard.image;
+            imgRight.alt = rightCard.name;
             document.getElementById('price-right').textContent = getPrice(rightCard).toFixed(2);
 
             // Hide right Price
