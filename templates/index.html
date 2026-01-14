@@ -79,6 +79,14 @@
       letter-spacing: -0.5px;
     }
 
+    .subtitle {
+      color: #aaa;
+      margin-top: -0.5rem;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
     #stats {
       display: inline-flex;
       background: rgba(0, 0, 0, 0.3);
@@ -1102,6 +1110,57 @@
       document.getElementById('shortcuts-modal').style.display = 'none';
     }
 
+    // --- Queue System ---
+    class CardQueue {
+      constructor() {
+        this.queue = [];
+        this.minSize = 3;
+        this.maxSize = 5;
+        this.isFetching = false;
+      }
+
+      async fill() {
+        if (this.isFetching || this.queue.length >= this.maxSize) return;
+        this.isFetching = true;
+
+        try {
+          while (this.queue.length < this.minSize) {
+            const card = await fetchCardData(true); // forceNew=true calls backend, backend gives random card
+            if (card && card.token) {
+              // Preload image
+              if (card.image) {
+                const img = new Image();
+                img.src = card.image;
+              }
+              this.queue.push(card);
+            }
+          }
+        } catch (e) {
+          console.error("Queue fill error:", e);
+        } finally {
+          this.isFetching = false;
+        }
+      }
+
+      async pop() {
+        if (this.queue.length === 0) {
+          // Panic fetch if queue empty
+          const card = await fetchCardData(true);
+          this.fill(); // Trigger background refill
+          return card;
+        }
+        const card = this.queue.shift();
+        this.fill(); // Trigger background refill
+        return card;
+      }
+
+      clear() {
+        this.queue = [];
+      }
+    }
+
+    const cardQueue = new CardQueue();
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (document.getElementById('filter-container').style.display !== 'none') return;
@@ -1236,12 +1295,10 @@
       document.getElementById("score").textContent = "0";
       document.getElementById("streak").textContent = "0";
       document.getElementById("message").textContent = "New filter selected — game restarting!";
-      // preloadedCardPromise = null; // Removed queue/preload reference
       currentGuess = [];
 
-      document.getElementById("message").textContent = "New filter selected — game restarting!";
-      document.getElementById("message").textContent = "New filter selected — game restarting!";
-      currentGuess = [];
+      cardQueue.clear(); // Clear old queue with wrong filter
+      await cardQueue.fill(); // Start filling new queue
 
       // Start fresh
       loadNextCard();
@@ -1271,7 +1328,8 @@
     async function loadNextCard() {
       document.getElementById("card-wrapper").classList.add("loading");
       try {
-        const card = await fetchCardData(true);
+        // Use queue instead of direct fetch
+        const card = await cardQueue.pop();
         if (card) {
           renderCard(card);
         }
@@ -1457,8 +1515,7 @@
         const manaIcons = renderManaCost(card.mana_cost);
 
         // NOTE: Since we are preloading, the image *blob* isn't preloaded, just the URL.
-        // To make it truly instant, we ideally preload the images too. 
-        // For now, we rely on browser cache or fast CDN.
+        // The queue handles image preloading via new Image().
 
         if (card.image) {
           const img = new Image();
@@ -1540,7 +1597,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           guess,
-          actual_mana_cost: currentCardData.mana_cost,
+          token: currentCardData.token, // Send token instead of actual_mana_cost
+          // actual_mana_cost: currentCardData.mana_cost, // REMOVED for security
           allow_anagrams: document.getElementById("anagramToggle").checked
         })
       });

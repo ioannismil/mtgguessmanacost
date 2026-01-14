@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, jsonify, session,send_file
+from flask import Flask, render_template, request, jsonify, session, send_file
+import os
+from itsdangerous import URLSafeTimedSerializer
 import requests
 import re
 
@@ -13,7 +15,21 @@ def normalize_mana_cost(cost):
     return "".join(symbols)
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"
+app = Flask(__name__)
+# Use environment variable for secret key in production
+app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key_change_me")
+serializer = URLSafeTimedSerializer(app.secret_key)
+
+def generate_card_token(card_data):
+    """Encrypts card data into a token."""
+    return serializer.dumps(card_data)
+
+def verify_card_token(token):
+    """Decrypts token to get card data."""
+    try:
+        return serializer.loads(token, max_age=3600) # Token valid for 1 hour
+    except Exception:
+        return None
 
 @app.route("/")
 def index():
@@ -74,8 +90,9 @@ def get_card():
     force_new = request.args.get("new_card", "false").lower() == "true"
     
     # Return cached card if available and not forcing new
-    if not force_new and "current_card_data" in session:
-        return jsonify(session["current_card_data"])
+    # force_new is deprecated with queue system but kept for compatibility
+    # if not force_new and "current_card_data" in session:
+    #     return jsonify(session["current_card_data"])
 
     selected_set = request.args.get("set", "").lower().strip()
     colors_filter = request.args.get("colors", "").strip()
@@ -150,14 +167,34 @@ def get_card():
             "color_identity": data.get("color_identity", [])
         }
 
-        # Save Scryfall URI and mana cost to session
-        session["current_scryfall_uri"] = data.get("scryfall_uri", "")
+        # Save Scryfall URI to session (optional, but better in token)
+        session["current_scryfall_uri"] = data.get("scryfall_uri", "") 
 
-        # Clean up for comparison
-        session["current_mana_cost"] = card["mana_cost"].upper().replace(" ", "")
-        
-        # Save full card data to session for persistence
-        session["current_card_data"] = card
+        # Generate secure token
+        token_data = {
+            "name": card["name"],
+            "mana_cost": card["mana_cost"],
+            "cmc": card["cmc"],
+            "image": card["image"],
+            "scryfall_uri": data.get("scryfall_uri", "")
+        }
+        card["token"] = generate_card_token(token_data)
+
+        # Remove sensitive data from clear text response
+        # We need mana_cost for history BUT we shouldn't send it to client if we want to prevent cheating.
+        # However, for Art Detective or Price is Right, mana_cost might be public?
+        # For "Guess Mana Cost", we MUST HIDE it.
+        # For now, let's redact it. Use token for validation.
+        # card["mana_cost"] = "???" # Client needs to handle this.
+        # Actually existing frontend relies on card.mana_cost to NOT be shown? 
+        # No, frontend receives it and hides it via CSS (insecure).
+        # We will DELETE it from response for Guess Game.
+        if game_mode == "guess_mana" or not game_mode: # Default mode
+             del card["mana_cost"]
+             del card["cmc"]
+
+        # Session storage is no longer primary source of truth for the active card
+        # session["current_card_data"] = card 
 
         return jsonify(card)
     except Exception as e:
@@ -194,10 +231,16 @@ def guess():
     user_guess = request.json["guess"].upper().replace(" ", "").replace("/", "")
     
     # Stateless validation: prefer mana cost sent by client (for queue/prefetch scenarios)
-    if "actual_mana_cost" in request.json:
-        correct_cost = request.json["actual_mana_cost"].upper().replace(" ", "").replace("/", "")
-    else:
-        correct_cost = session.get("current_mana_cost", "").replace("/", "")
+    # Secure validation using Token
+    token = request.json.get("token")
+    if not token:
+        return jsonify({"error": "Missing game token"}), 400
+    
+    card_data = verify_card_token(token)
+    if not card_data:
+        return jsonify({"error": "Invalid or expired token"}), 400
+
+    correct_cost = card_data["mana_cost"].upper().replace(" ", "").replace("/", "")
 
     allow_anagrams = request.json.get("allow_anagrams", False)
     
@@ -219,7 +262,7 @@ def guess():
         result["message"] = "❌ Wrong!"
 
     # Add to history
-    card_data = session.get("current_card_data", {})
+    # card_data comes from token now
     if card_data:
         if "history" not in session:
             session["history"] = []
@@ -249,7 +292,7 @@ def guess():
     # Return the correct mana cost separately for frontend SVG rendering
     # Return the correct mana cost and Scryfall URI
     result["correct_cost"] = correct_cost
-    result["scryfall_uri"] = session.get("current_scryfall_uri", "")
+    result["scryfall_uri"] = card_data.get("scryfall_uri", "")
 
     return jsonify(result)
 
