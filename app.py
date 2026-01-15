@@ -3,6 +3,7 @@ import os
 from itsdangerous import URLSafeTimedSerializer
 import requests
 import re
+from datetime import datetime, timedelta
 
 def normalize_mana_cost(cost):
     if not cost:
@@ -19,6 +20,11 @@ app = Flask(__name__)
 # Use environment variable for secret key in production
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key_change_me")
 serializer = URLSafeTimedSerializer(app.secret_key)
+
+# Cache for Scryfall sets data (reduces API calls)
+_sets_cache = None
+_sets_cache_time = None
+CACHE_DURATION = timedelta(hours=24)  # Refresh daily
 
 def generate_card_token(card_data):
     """Encrypts card data into a token."""
@@ -207,6 +213,13 @@ def higher_lower():
 
 @app.route("/get_sets")
 def get_sets():
+    global _sets_cache, _sets_cache_time
+    
+    # Check if cache is valid (exists and not expired)
+    if _sets_cache and _sets_cache_time and datetime.now() - _sets_cache_time < CACHE_DURATION:
+        return jsonify(_sets_cache)
+    
+    # Cache miss or expired - fetch fresh data from Scryfall
     r = requests.get("https://api.scryfall.com/sets")
     data = r.json()
 
@@ -215,6 +228,10 @@ def get_sets():
         for s in data.get("data", [])
         if not s["set_type"] in ["token", "promo", "memorabilia"]
     ]
+    
+    # Update cache
+    _sets_cache = sets
+    _sets_cache_time = datetime.now()
 
     return jsonify(sets)
 
