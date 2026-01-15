@@ -9,3 +9,5 @@ instance/
 *.db
 bulk_cards.json
 instance/leaderboard.db
+instance/*
+tests/
