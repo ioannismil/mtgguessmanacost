@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MTG Trivia - Leaderboard</title>
+    <meta name="description"
+        content="View the top scores for MTG Trivia games. Compete with players worldwide in Guess the Mana Cost, Higher or Lower, Art Detective, and Price is Right.">
+
+    <style>
+        :root {
+            --bg-color: #20232a;
+            --text-color: #fff;
+            --accent: #61dafb;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: var(--bg-color);
+            background: radial-gradient(circle at center, #2c313c 0%, #20232a 100%);
+            color: var(--text-color);
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Navbar Styles - matching index.html */
+        .navbar {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: flex-start;
+            gap: 3rem;
+            align-items: center;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent);
+            opacity: 1;
+        }
+
+        .burger-menu {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .burger-bar {
+            width: 25px;
+            height: 3px;
+            background-color: #fff;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                justify-content: space-between;
+                gap: 0;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                flex-direction: column;
+                background: #2c313c;
+                padding: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                align-items: center;
+                gap: 1rem;
+                z-index: 200;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .burger-menu {
+                display: flex;
+            }
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 6vw, 3rem);
+            margin: 1.5rem 0 0.5rem;
+            text-shadow: 0 0 20px rgba(97, 218, 251, 0.3);
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: #aaa;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Game Mode Tabs */
+        .game-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .tab-btn:hover {
+            background: rgba(97, 218, 251, 0.1);
+            border-color: rgba(97, 218, 251, 0.3);
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        /* Timeframe Toggle */
+        .timeframe-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .timeframe-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .timeframe-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .timeframe-btn.active {
+            background: rgba(97, 218, 251, 0.2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-table {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(97, 218, 251, 0.15);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--accent);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th.center,
+        td.center {
+            text-align: center;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: rgba(97, 218, 251, 0.08);
+        }
+
+        tbody tr.top-3 {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        td {
+            padding: 0.875rem 1rem;
+            color: #ddd;
+        }
+
+        .rank {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .rank-medal {
+            font-size: 1.4rem;
+        }
+
+        .username {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .score-value {
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .streak-value {
+            color: #ffa726;
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: #888;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .loading {
+            padding: 2rem;
+            text-align: center;
+            color: #aaa;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 0.5rem;
+            }
+
+            .leaderboard-table {
+                font-size: 0.9rem;
+            }
+
+            th,
+            td {
+                padding: 0.6rem 0.5rem;
+            }
+
+            .rank-medal {
+                font-size: 1.2rem;
+            }
+
+            .timestamp {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BV26PCJVKY"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-BV26PCJVKY');
+</script>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="/" class="nav-brand">MTG Trivia</a>
+        <div class="nav-links" id="navLinks">
+            <a href="/" class="nav-link">Guess Mana Cost</a>
+            <a href="/higher_lower" class="nav-link">Higher or Lower</a>
+            <a href="/art_detective" class="nav-link">Art Detective</a>
+            <a href="/price_is_right" class="nav-link">Price is Right</a>
+            <a href="/leaderboard" class="nav-link active">🏆 Leaderboard</a>
+            <a href="/faq" class="nav-link">FAQ</a>
+        </div>
+        <div class="burger-menu" id="burgerMenu">
+            <div class="burger-bar"></div>
+            <div class="burger-bar"></div>
+            <div class="burger-bar"></div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>🏆 Leaderboard</h1>
+        <p class="subtitle">Top players across all game modes</p>
+
+        <!-- Game Mode Tabs -->
+        <div class="game-tabs">
+            <button class="tab-btn active" data-game="guess_mana">Guess Mana Cost</button>
+            <button class="tab-btn" data-game="higher_lower">Higher or Lower</button>
+            <button class="tab-btn" data-game="art_detective">Art Detective</button>
+            <button class="tab-btn" data-game="price_is_right">Price is Right</button>
+        </div>
+
+        <!-- Timeframe Toggle -->
+        <div class="timeframe-toggle">
+            <button class="timeframe-btn active" data-timeframe="all_time">All Time</button>
+            <button class="timeframe-btn" data-timeframe="weekly">This Week</button>
+            <button class="timeframe-btn" data-timeframe="daily">Today</button>
+        </div>
+
+        <!-- Leaderboard Table -->
+        <div class="leaderboard-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="center">Rank</th>
+                        <th>Player</th>
+                        <th class="center">Score</th>
+                        <th class="center">Streak</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <tr>
+                        <td colspan="5" class="loading">
+                            <div class="spinner"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentGame = 'guess_mana';
+        let currentTimeframe = 'all_time';
+
+        // DOM Elements
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const timeframeBtns = document.querySelectorAll('.timeframe-btn');
+        const leaderboardBody = document.getElementById('leaderboardBody');
+
+        // Burger menu
+        document.getElementById('burgerMenu').addEventListener('click', function () {
+            document.getElementById('navLinks').classList.toggle('active');
+        });
+
+        // Tab switching
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentGame = btn.dataset.game;
+                loadLeaderboard();
+            });
+        });
+
+        // Timeframe switching
+        timeframeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                timeframeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTimeframe = btn.dataset.timeframe;
+                loadLeaderboard();
+            });
+        });
+
+        // Load leaderboard data
+        async function loadLeaderboard() {
+            leaderboardBody.innerHTML = '<tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>';
+
+            try {
+                const response = await fetch(`/api/leaderboard/${currentGame}?timeframe=${currentTimeframe}&limit=100`);
+                const data = await response.json();
+
+                if (data.length === 0) {
+                    leaderboardBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <div class="empty-state-icon">🎮</div>
+                                <p>No scores yet. Be the first!</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                leaderboardBody.innerHTML = data.map(entry => {
+                    const date = new Date(entry.timestamp);
+                    const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                    let rankDisplay = entry.rank;
+                    if (entry.rank === 1) rankDisplay = '🥇';
+                    else if (entry.rank === 2) rankDisplay = '🥈';
+                    else if (entry.rank === 3) rankDisplay = '🥉';
+
+                    const rowClass = entry.rank <= 3 ? 'top-3' : '';
+
+                    return `
+                        <tr class="${rowClass}">
+                            <td class="center rank ${entry.rank <= 3 ? 'rank-medal' : ''}">${rankDisplay}</td>
+                            <td class="username">${escapeHtml(entry.username)}</td>
+                            <td class="center score-value">${entry.score}</td>
+                            <td class="center streak-value">${entry.streak}</td>
+                            <td class="timestamp">${formattedDate}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Failed to load leaderboard:', error);
+                leaderboardBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <p>Failed to load leaderboard. Please try again.</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadLeaderboard, 30000);
+
+        // Initial load
+        loadLeaderboard();
+    </script>
+</body>
+
+</html>
