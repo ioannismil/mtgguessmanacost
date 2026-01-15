@@ -640,9 +640,38 @@
             }
         }
 
-        function gameOver() {
+        async function submitToLeaderboard(score, streak = 0) {
+            const username = prompt("🏆 Enter your name for the leaderboard (or leave blank for Anonymous):") || "Anonymous";
+
+            try {
+                const response = await fetch('/api/submit_score', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        game_mode: 'higher_lower',
+                        score: score,
+                        streak: streak,
+                        username: username.trim().substring(0, 50)
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.rank) {
+                    alert(`🎉 You ranked #${result.rank} on the leaderboard!`);
+                }
+            } catch (error) {
+                console.error('Failed to submit score:', error);
+            }
+        }
+
+        async function gameOver() {
             stopTimer();
             alert(`Game Over! Final Score: ${score}`);
+
+            // Submit to leaderboard
+            await submitToLeaderboard(score);
+
             initGame();
         }
 

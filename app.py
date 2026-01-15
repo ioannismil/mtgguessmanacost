@@ -258,6 +258,10 @@ def get_sets():
 def price_is_right():
     return render_template("price_is_right.html")
 
+@app.route("/art_detective")
+def art_detective():
+    return render_template("art_detective.html")
+
 @app.route("/leaderboard")
 def leaderboard_page():
     """Display the leaderboard page"""

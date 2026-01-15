@@ -505,12 +505,41 @@
             } else {
                 // Game Over? Or just reset streak? 
                 // In typical Higher Lower, game ends.
-                setTimeout(() => {
+                setTimeout(async () => {
                     alert(`Game Over! Final Score: ${score}`);
+
+                    // Submit to leaderboard
+                    await submitToLeaderboard(score);
+
                     score = 0;
                     document.getElementById('score').textContent = score;
                     initGame();
                 }, 1000);
+            }
+        }
+
+        async function submitToLeaderboard(score, streak = 0) {
+            const username = prompt("🏆 Enter your name for the leaderboard (or leave blank for Anonymous):") || "Anonymous";
+
+            try {
+                const response = await fetch('/api/submit_score', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        game_mode: 'price_is_right',
+                        score: score,
+                        streak: streak,
+                        username: username.trim().substring(0, 50)
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.rank) {
+                    alert(`🎉 You ranked #${result.rank} on the leaderboard!`);
+                }
+            } catch (error) {
+                console.error('Failed to submit score:', error);
             }
         }
 

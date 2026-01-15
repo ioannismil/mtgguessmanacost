@@ -1409,11 +1409,44 @@
       else el.classList.remove('timer-low');
     }
 
-    function handleTimeUp() {
+    async function submitToLeaderboard(score, streak) {
+      const username = prompt("🏆 Enter your name for the leaderboard (or leave blank for Anonymous):") || "Anonymous";
+
+      try {
+        const response = await fetch('/api/submit_score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            game_mode: 'guess_mana',
+            score: score,
+            streak: streak,
+            username: username.trim().substring(0, 50)
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.rank) {
+          alert(`🎉 You ranked #${result.rank} on the leaderboard!`);
+        }
+      } catch (error) {
+        console.error('Failed to submit score:', error);
+      }
+    }
+
+    async function handleTimeUp() {
       stopTimer();
       gameOver = true;
       disableAllButtons();
-      alert(`Time's Up! Final Score: ${document.getElementById('score').textContent}`);
+
+      const finalScore = parseInt(document.getElementById('score').textContent) || 0;
+      const finalStreak = parseInt(document.getElementById('streak').textContent) || 0;
+
+      alert(`Time's Up! Final Score: ${finalScore}`);
+
+      // Submit to leaderboard
+      await submitToLeaderboard(finalScore, finalStreak);
+
       // Reset to initial state for that mode
       resetGameWithMode();
     }
@@ -1632,6 +1665,9 @@
         document.getElementById("message").textContent += "Game Over!";
         document.getElementById("message").innerHTML += renderManaIconsFromCost(result.correct_cost || guess);
         gameOver = true;
+        const finalScore = parseInt(document.getElementById('score').textContent) || 0;
+        const finalStreak = parseInt(document.getElementById('streak').textContent) || 0;
+        await submitToLeaderboard(result.score, result.streak);
       }
 
 

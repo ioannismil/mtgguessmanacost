@@ -1155,7 +1155,33 @@
                 document.getElementById('lives-display').textContent = hearts;
             }
 
-            function resetGame() {
+            async function submitToLeaderboard(score, streak = 0) {
+                const username = prompt("🏆 Enter your name for the leaderboard (or leave blank for Anonymous):") || "Anonymous";
+
+                try {
+                    const response = await fetch('/api/submit_score', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            game_mode: 'art_detective',
+                            score: score,
+                            streak: streak,
+                            username: username.trim().substring(0, 50)
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.rank) {
+                        alert(`🎉 You ranked #${result.rank} on the leaderboard!`);
+                    }
+                } catch (error) {
+                    console.error('Failed to submit score:', error);
+                }
+            }
+
+            async function resetGame() {
+                // Submit score before resetting if game was played
                 lives = 3;
                 score = 0;
                 document.getElementById('score').textContent = score;
@@ -1220,9 +1246,11 @@
                     lives--;
                     updateLives();
                     if (lives <= 0) {
+                        submitToLeaderboard(score);
                         setTimeout(() => {
                             document.getElementById('final-score').textContent = score;
                             document.getElementById('game-over-modal').classList.add('show');
+
                         }, 1500);
                     }
                 }

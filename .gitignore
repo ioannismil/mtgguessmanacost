@@ -1,3 +1,5 @@
 venv/
 ideas.md
 tests/
+instance/
+instance/leaderboard.db
