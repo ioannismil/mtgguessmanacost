@@ -4,6 +4,7 @@ from itsdangerous import URLSafeTimedSerializer
 import requests
 import re
 from datetime import datetime, timedelta
+from database import db, Score
 
 def normalize_mana_cost(cost):
     if not cost:
@@ -21,6 +22,11 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key_change_me")
 serializer = URLSafeTimedSerializer(app.secret_key)
 
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///leaderboard.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+
 # Cache for Scryfall sets data (reduces API calls)
 _sets_cache = None
 _sets_cache_time = None
@@ -36,6 +42,15 @@ def verify_card_token(token):
         return serializer.loads(token, max_age=3600) # Token valid for 1 hour
     except Exception:
         return None
+
+# Initialize database tables on first request
+@app.before_request
+def create_tables():
+    """Create database tables if they don't exist"""
+    if not hasattr(app, '_tables_created'):
+        with app.app_context():
+            db.create_all()
+        app._tables_created = True
 
 @app.route("/")
 def index():
@@ -235,13 +250,99 @@ def get_sets():
 
     return jsonify(sets)
 
-@app.route("/art_detective")
-def art_detective():
-    return render_template("art_detective.html")
-
 @app.route("/price_is_right")
 def price_is_right():
     return render_template("price_is_right.html")
+
+@app.route("/leaderboard")
+def leaderboard_page():
+    """Display the leaderboard page"""
+    return render_template("leaderboard.html")
+
+@app.route("/api/submit_score", methods=["POST"])
+def submit_score():
+    """Submit a score to the leaderboard"""
+    data = request.get_json()
+    
+    # Validate required fields
+    game_mode = data.get("game_mode")
+    score = data.get("score")
+    streak = data.get("streak", 0)
+    username = data.get("username", "Anonymous")[:50]  # Limit length
+    
+    if not game_mode or score is None:
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    # Generate or retrieve session ID for deduplication
+    if "session_id" not in session:
+        import uuid
+        session["session_id"] = str(uuid.uuid4())
+    
+    session_id = session["session_id"]
+    
+    # Prevent duplicate submissions from same session (cooldown: 60 seconds)
+    recent = Score.query.filter_by(
+        session_id=session_id, 
+        game_mode=game_mode
+    ).order_by(Score.timestamp.desc()).first()
+    
+    if recent and (datetime.utcnow() - recent.timestamp).seconds < 60:
+        return jsonify({"error": "Please wait before submitting another score"}), 429
+    
+    # Save score
+    new_score = Score(
+        game_mode=game_mode,
+        username=username,
+        score=score,
+        streak=streak,
+        session_id=session_id
+    )
+    db.session.add(new_score)
+    db.session.commit()
+    
+    # Calculate rank (count how many scores are better)
+    rank = Score.query.filter(
+        Score.game_mode == game_mode,
+        Score.score > score
+    ).count() + 1
+    
+    return jsonify({
+        "message": "Score submitted!",
+        "rank": rank,
+        "username": username
+    })
+
+@app.route("/api/leaderboard/<game_mode>")
+def get_leaderboard(game_mode):
+    """Get leaderboard for a specific game mode"""
+    timeframe = request.args.get("timeframe", "all_time")  # all_time, weekly, daily
+    limit = int(request.args.get("limit", 100))
+    
+    query = Score.query.filter_by(game_mode=game_mode)
+    
+    # Filter by timeframe
+    if timeframe == "daily":
+        cutoff = datetime.utcnow() - timedelta(days=1)
+        query = query.filter(Score.timestamp >= cutoff)
+    elif timeframe == "weekly":
+        cutoff = datetime.utcnow() - timedelta(days=7)
+        query = query.filter(Score.timestamp >= cutoff)
+    
+    # Order by score DESC, then streak DESC, then timestamp ASC (earlier submission wins ties)
+    scores = query.order_by(
+        Score.score.desc(),
+        Score.streak.desc(),
+        Score.timestamp.asc()
+    ).limit(limit).all()
+    
+    # Add rank to each entry
+    results = []
+    for idx, score_entry in enumerate(scores, start=1):
+        score_dict = score_entry.to_dict()
+        score_dict['rank'] = idx
+        results.append(score_dict)
+    
+    return jsonify(results)
 
 @app.route("/guess", methods=["POST"])
 def guess():
