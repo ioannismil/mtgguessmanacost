@@ -3,9 +3,13 @@ import os
 from itsdangerous import URLSafeTimedSerializer
 import requests
 import re
+import json
 from datetime import datetime, timedelta
-from database import db, Score
+from database import db, Score, Card
 
+# Feature flag: Set to True to use local card database, False to use Scryfall API
+USE_LOCAL_CARDS = os.environ.get('USE_LOCAL_CARDS', 'false').lower() == 'true'
+USE_LOCAL_CARDS = True
 def normalize_mana_cost(cost):
     if not cost:
         return ""
@@ -112,6 +116,53 @@ def reset_game():
 
 @app.route("/get_card")
 def get_card():
+    """Get a random card - from local database if USE_LOCAL_CARDS=True, otherwise from Scryfall API"""
+    
+    # Extract parameters
+    selected_set = request.args.get("set", "").lower().strip()
+    colors_filter = request.args.get("colors", "").strip()
+    formats_filter = request.args.get("formats", "").strip()
+    game_mode = request.args.get("mode", "").lower().strip()
+    force_new = request.args.get("new_card", "false").lower() == "true"
+    
+    # Route to local database or API based on feature flag
+    if USE_LOCAL_CARDS:
+        # Use local database
+        from card_queries import get_card_from_database
+        
+        try:
+            card_data = get_card_from_database(
+                selected_set=selected_set,
+                colors_filter=colors_filter,
+                formats_filter=formats_filter,
+                game_mode=game_mode
+            )
+            
+            if not card_data:
+                return jsonify({"error": "No cards found matching your filters."}), 404
+            
+            # Generate secure token
+            token_data = {
+                "name": card_data["name"],
+                "mana_cost": card_data["mana_cost"],
+                "cmc": card_data["cmc"],
+                "image": card_data["image"],
+                "scryfall_uri": card_data.get("scryfall_uri", "")
+            }
+            card_data["token"] = generate_card_token(token_data)
+            
+            # Remove mana cost for guess_mana mode (anti-cheat)
+            if game_mode == "guess_mana" or not game_mode:
+                del card_data["mana_cost"]
+                del card_data["cmc"]
+            
+            return jsonify(card_data)
+            
+        except Exception as e:
+            print(f"ERROR: Local database query failed: {e}")
+            return jsonify({"error": "Database query failed"}), 500
+    
+    # Otherwise, use Scryfall API (existing logic below)
     force_new = request.args.get("new_card", "false").lower() == "true"
     
     # Return cached card if available and not forcing new

@@ -1,5 +1,11 @@
+v*.pyc
+__pycache__/
+.DS_Store
+.env
+.venv/
 venv/
-ideas.md
-tests/
+node_modules/
 instance/
+*.db
+bulk_cards.json
 instance/leaderboard.db
