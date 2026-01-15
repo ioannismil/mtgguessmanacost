@@ -9,7 +9,7 @@ from database import db, Score, Card
 
 # Feature flag: Set to True to use local card database, False to use Scryfall API
 USE_LOCAL_CARDS = os.environ.get('USE_LOCAL_CARDS', 'false').lower() == 'true'
-USE_LOCAL_CARDS = True
+# USE_LOCAL_CARDS = True
 def normalize_mana_cost(cost):
     if not cost:
         return ""
