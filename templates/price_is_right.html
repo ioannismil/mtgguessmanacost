@@ -28,7 +28,7 @@
       "operatingSystem": "Web",
       "applicationCategory": "GameApplication",
       "genre": "Trivia",
-      "description": "A Magic: The Gathering Price is Right game where you guess the market value of cards.",
+      "description": "A Magic: The Gathering Price is Right game where you guess the most expensive card from a set of options.",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -42,9 +42,9 @@
             --bg-color: #20232a;
             --text-color: #fff;
             --accent: #61dafb;
-            /* Gold for money */
-            --card-width: 40vw;
-            --card-max-width: 250px;
+            --gold: #ffd700;
+            --green: #4caf50;
+            --red: #f44336;
         }
 
         body {
@@ -62,7 +62,7 @@
             overflow-x: hidden;
         }
 
-        /* Navbar - reused */
+        /* Navbar */
         .navbar {
             width: 100%;
             background: rgba(0, 0, 0, 0.4);
@@ -97,6 +97,7 @@
             font-weight: 500;
             opacity: 0.7;
             transition: color 0.2s;
+            white-space: nowrap;
         }
 
         .nav-link:hover,
@@ -105,146 +106,6 @@
             opacity: 1;
         }
 
-        .game-container {
-            width: 100%;
-            max-width: 1000px;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h1 {
-            font-size: clamp(2rem, 6vw, 3rem);
-            margin-top: 1rem;
-            color: var(--text-color);
-            text-shadow: 0 0 20px rgba(97, 218, 251, 0.3);
-        }
-
-        .subtitle {
-            color: #aaa;
-            margin-top: -0.5rem;
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-
-        .score-board {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.5rem 1.5rem;
-            border-radius: 50px;
-            margin-bottom: 2rem;
-            font-size: 1.2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .game-area {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-            width: 100%;
-            flex-wrap: wrap;
-        }
-
-        .card-slot {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-
-        .card-image {
-            width: var(--card-width);
-            max-width: var(--card-max-width);
-            aspect-ratio: 63 / 88;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-            width: var(--card-width);
-            max-width: var(--card-max-width);
-            object-fit: cover;
-            background: #1a1c22;
-        }
-
-        .price-tag {
-            margin-top: 1rem;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #81c784;
-            /* Green for money */
-            background: rgba(0, 0, 0, 0.6);
-            padding: 5px 15px;
-            border-radius: 20px;
-        }
-
-        .vs-text {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #888;
-            margin: 0 1rem;
-        }
-
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            z-index: 20;
-        }
-
-        .btn-action {
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-            width: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-up {
-            background: #4caf50;
-            color: white;
-        }
-
-        .btn-up:hover {
-            background: #43a047;
-            transform: scale(1.05);
-        }
-
-        .btn-down {
-            background: #f44336;
-            color: white;
-        }
-
-        .btn-down:hover {
-            background: #e53935;
-            transform: scale(1.05);
-        }
-
-        .result-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 4rem;
-            text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
-            z-index: 50;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .result-overlay.show {
-            opacity: 1;
-        }
-
-        /* Burger Menu (copied) */
         .burger-menu {
             display: none;
             flex-direction: column;
@@ -260,6 +121,251 @@
             border-radius: 2px;
             transition: 0.3s;
         }
+
+        .game-container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 6vw, 3rem);
+            margin-top: 1rem;
+            color: var(--gold);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: #aaa;
+            margin-top: -0.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .score-board {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            margin-bottom: 2rem;
+            font-size: 1.3rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+
+        .score-board span {
+            color: var(--gold);
+            font-weight: bold;
+        }
+
+        .instruction {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 2rem;
+        }
+
+        .card-wrapper {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-wrapper:hover:not(.revealed) {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(97, 218, 251, 0.3);
+        }
+
+        .card-wrapper.selected {
+            box-shadow: 0 0 20px rgba(97, 218, 251, 0.6);
+            transform: scale(1.02);
+        }
+
+        .card-wrapper.correct {
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.8);
+            animation: correctPulse 0.5s ease-in-out;
+        }
+
+        .card-wrapper.incorrect {
+            box-shadow: 0 0 30px rgba(244, 67, 54, 0.8);
+            animation: shake 0.5s;
+        }
+
+        @keyframes correctPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .card-image {
+            width: 100%;
+            aspect-ratio: 63 / 88;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #1a1c22;
+            display: block;
+        }
+
+        .price-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
+            padding: 1.5rem 1rem 1rem;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-wrapper.revealed .price-overlay {
+            transform: translateY(0);
+        }
+
+        .price-tag {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--gold);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .result-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 2.5rem;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card-wrapper.revealed .result-badge {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Success Modal */
+        .success-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .success-modal.show {
+            display: flex;
+        }
+
+        .success-content {
+            background: linear-gradient(135deg, #2c313c 0%, #1a1c22 100%);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--green);
+            max-width: 400px;
+            width: 90%;
+            animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.7);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-title {
+            font-size: 3rem;
+            color: var(--green);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .success-message {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .modal-next-btn {
+            padding: 1rem 3rem;
+            font-size: 1.3rem;
+            background: var(--green);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .modal-next-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.6);
+            background: #45a049;
+        }
+
 
         @media (max-width: 768px) {
             .navbar {
@@ -289,17 +395,54 @@
                 display: flex;
             }
 
-            .game-area {
-                flex-direction: column;
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                max-width: 400px;
             }
 
-            .vs-text {
-                transform: rotate(90deg);
-                margin: 1rem 0;
+            .price-tag {
+                font-size: 1.5rem;
             }
 
-            .card-image {
-                width: 60vw;
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .cards-grid {
+                max-width: 700px;
+            }
+        }
+
+        /* Loading state */
+        .card-wrapper.loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .card-wrapper.loading::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.1) 50%,
+                    transparent 100%);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
             }
         }
     </style>
@@ -324,8 +467,8 @@
             <div class="burger-bar"></div>
         </div>
         <div class="nav-links" id="navLinks">
-            <a href="/" class="nav-link">Guess Mana</a>
-            <a href="/higher_lower" class="nav-link">Higher/Lower</a>
+            <a href="/" class="nav-link">Guess Mana Cost</a>
+            <a href="/higher_lower" class="nav-link">Higher or Lower</a>
             <a href="/art_detective" class="nav-link">Art Detective</a>
             <a href="/price_is_right" class="nav-link active">Price is Right</a>
             <a href="/leaderboard" class="nav-link">🏆 Leaderboard</a>
@@ -334,41 +477,29 @@
     </nav>
 
     <div class="game-container">
-        <h1>Price is Right</h1>
-        <p class="subtitle">Guess if the next card's price is higher or lower</p>
+        <h1>💰 Price is Right</h1>
+        <p class="subtitle">Which card is the most expensive?</p>
 
         <div class="score-board">
             Score: <span id="score">0</span>
         </div>
 
-        <div class="game-area">
-            <!-- Left Card (Known) -->
-            <div class="card-slot" id="left-slot">
-                <img id="img-left" class="card-image" src="" alt="Card 1">
-                <div class="price-tag">$<span id="price-left">---</span></div>
-            </div>
+        <p class="instruction" id="instruction">Click on the card you think costs the most!</p>
 
-            <!-- Controls -->
-            <div class="controls">
-                <button class="btn-action btn-up" onclick="guess('higher')">
-                    ▲ Higher
-                </button>
-                <div class="vs-text">VS</div>
-                <button class="btn-action btn-down" onclick="guess('lower')">
-                    ▼ Lower
-                </button>
-            </div>
-
-            <!-- Right Card (Unknown) -->
-            <div class="card-slot" id="right-slot">
-                <img id="img-right" class="card-image" src="" alt="Card 2">
-                <div class="price-tag" style="background: transparent; border: 2px dashed #444; color: transparent;">
-                    $<span id="price-right" style="opacity: 0">---</span>
-                </div>
-                <div id="result-icon" class="result-overlay"></div>
-            </div>
+        <div class="cards-grid" id="cards-grid">
+            <!-- Cards will be dynamically inserted here -->
         </div>
     </div>
+
+    <!-- Success Modal -->
+    <div class="success-modal" id="success-modal">
+        <div class="success-content">
+            <div class="success-title">✅</div>
+            <div class="success-message">Correct!</div>
+            <button class="modal-next-btn" onclick="nextRound()">Next Round →</button>
+        </div>
+    </div>
+
     <footer
         style="margin-top: 3rem; padding: 2rem; color: #666; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px solid rgba(255,255,255,0.05); width: 100%;">
         <div style="display: flex; gap: 20px;">
@@ -390,14 +521,13 @@
         <a href="/privacy" style="color: #666; text-decoration: none; border-bottom: 1px dotted #666;">Privacy
             Policy</a>
     </footer>
-    <script>
-        let leftCard = null;
-        let rightCard = null;
-        let score = 0;
-        let isLoading = false;
 
-        // We can reuse the queue concept if we want, but for simplicity let's do direct fetch first then optimize if needed.
-        // Actually, queue is great for UX. Let's start simple though.
+    <script>
+        let cards = [];
+        let score = 0;
+        let selectedIndex = null;
+        let isRevealed = false;
+        let isLoading = false;
 
         function toggleNav() {
             document.getElementById('navLinks').classList.toggle('active');
@@ -405,7 +535,6 @@
 
         async function fetchCard() {
             try {
-                // Force new card, mode=price_is_right
                 const res = await fetch('/get_card?new_card=true&mode=price_is_right');
                 const data = await res.json();
 
@@ -430,95 +559,147 @@
         }
 
         async function initGame() {
-            isLoading = true;
-            leftCard = await fetchCard();
-            rightCard = await fetchCard();
+            score = 0;
+            document.getElementById('score').textContent = score;
+            await loadRound();
+        }
 
-            // Ensure differents
-            while (leftCard.name === rightCard.name) {
-                rightCard = await fetchCard();
+        async function loadRound() {
+            isLoading = true;
+            isRevealed = false;
+            selectedIndex = null;
+            cards = [];
+
+            // Show loading state
+            const grid = document.getElementById('cards-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-wrapper loading';
+                wrapper.innerHTML = '<div class="card-image"></div>';
+                grid.appendChild(wrapper);
             }
 
-            render();
+            // Hide modal (if showing)
+            document.getElementById('success-modal').classList.remove('show');
+            document.getElementById('instruction').textContent = 'Loading cards...';
+
+            // Fetch 4 cards
+            const fetchPromises = [];
+            for (let i = 0; i < 4; i++) {
+                fetchPromises.push(fetchCard());
+            }
+
+            cards = await Promise.all(fetchPromises);
+
+            // Ensure no duplicate cards
+            const names = new Set();
+            for (let i = 0; i < cards.length; i++) {
+                while (names.has(cards[i].name)) {
+                    cards[i] = await fetchCard();
+                }
+                names.add(cards[i].name);
+            }
+
+            renderCards();
             isLoading = false;
+            document.getElementById('instruction').textContent = 'Click on the card you think costs the most!';
         }
 
-        function render() {
-            if (!leftCard || !rightCard) return;
+        function renderCards() {
+            const grid = document.getElementById('cards-grid');
+            grid.innerHTML = '';
 
-            // Left
-            const imgLeft = document.getElementById('img-left');
-            imgLeft.src = leftCard.image;
-            imgLeft.alt = leftCard.name;
-            document.getElementById('price-left').textContent = getPrice(leftCard).toFixed(2);
+            cards.forEach((card, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-wrapper';
+                wrapper.onclick = () => selectCard(index);
 
-            // Right
-            const imgRight = document.getElementById('img-right');
-            imgRight.src = rightCard.image;
-            imgRight.alt = rightCard.name;
-            document.getElementById('price-right').textContent = getPrice(rightCard).toFixed(2);
+                const price = getPrice(card);
 
-            // Hide right Price
-            const rightPriceTag = document.querySelector('#right-slot .price-tag');
-            rightPriceTag.style.background = 'transparent';
-            rightPriceTag.style.border = '2px dashed #888';
-            rightPriceTag.style.color = 'transparent';
-            document.getElementById('price-right').style.opacity = '0';
+                wrapper.innerHTML = `
+                    <img src="${card.image}" alt="${card.name}" class="card-image">
+                    <div class="price-overlay">
+                        <div class="price-tag">$${price.toFixed(2)}</div>
+                    </div>
+                    <div class="result-badge"></div>
+                `;
 
-            document.getElementById('result-icon').className = 'result-overlay';
-            document.getElementById('result-icon').textContent = '';
+                grid.appendChild(wrapper);
+            });
         }
 
-        async function nextRound() {
-            leftCard = rightCard;
-            rightCard = await fetchCard();
-            render();
-            isLoading = false;
-        }
+        function selectCard(index) {
+            if (isRevealed || isLoading) return;
 
-        function guess(direction) {
-            if (isLoading) return;
-            isLoading = true;
+            selectedIndex = index;
+            isRevealed = true;
 
-            const p1 = getPrice(leftCard);
-            const p2 = getPrice(rightCard);
+            // Disable instruction
+            document.getElementById('instruction').textContent = '';
 
-            // Reveal
-            const rightPriceTag = document.querySelector('#right-slot .price-tag');
-            rightPriceTag.style.background = 'rgba(0,0,0,0.6)';
-            rightPriceTag.style.border = 'none';
-            rightPriceTag.style.color = '#81c784';
-            document.getElementById('price-right').style.opacity = '1';
+            // Find the most expensive card
+            let maxPrice = 0;
+            let maxIndex = 0;
+            cards.forEach((card, i) => {
+                const price = getPrice(card);
+                if (price > maxPrice) {
+                    maxPrice = price;
+                    maxIndex = i;
+                }
+            });
 
-            let correct = false;
-            if (direction === 'higher') correct = p2 >= p1;
-            else correct = p2 <= p1;
+            const isCorrect = selectedIndex === maxIndex;
 
-            const resEl = document.getElementById('result-icon');
-            resEl.textContent = correct ? '✅' : '❌';
-            resEl.classList.add('show');
+            // Reveal all cards and mark them
+            const wrappers = document.querySelectorAll('.card-wrapper');
+            wrappers.forEach((wrapper, i) => {
+                wrapper.classList.add('revealed');
+                wrapper.style.pointerEvents = 'none';
 
-            if (correct) {
+                const badge = wrapper.querySelector('.result-badge');
+
+                if (i === maxIndex) {
+                    // This is the correct answer
+                    wrapper.classList.add('correct');
+                    badge.textContent = '🏆';
+                } else if (i === selectedIndex) {
+                    // User selected this but it's wrong
+                    wrapper.classList.add('incorrect');
+                    badge.textContent = '❌';
+                }
+            });
+
+            // Update score and show modal or game over
+            if (isCorrect) {
                 score++;
                 document.getElementById('score').textContent = score;
-                setTimeout(nextRound, 1500);
+
+                // Show success modal after animation
+                setTimeout(() => {
+                    document.getElementById('success-modal').classList.add('show');
+                }, 800);
             } else {
-                // Game Over? Or just reset streak? 
-                // In typical Higher Lower, game ends.
+                // Game over
                 setTimeout(async () => {
                     alert(`Game Over! Final Score: ${score}`);
 
                     // Submit to leaderboard
                     await submitToLeaderboard(score);
 
-                    score = 0;
-                    document.getElementById('score').textContent = score;
+                    // Reset game
                     initGame();
-                }, 1000);
+                }, 1500);
             }
         }
 
-        async function submitToLeaderboard(score, streak = 0) {
+        async function nextRound() {
+            // Hide modal
+            document.getElementById('success-modal').classList.remove('show');
+            await loadRound();
+        }
+
+        async function submitToLeaderboard(finalScore) {
             const username = prompt("🏆 Enter your name for the leaderboard (or leave blank for Anonymous):") || "Anonymous";
 
             try {
@@ -527,8 +708,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         game_mode: 'price_is_right',
-                        score: score,
-                        streak: streak,
+                        score: finalScore,
+                        streak: 0,
                         username: username.trim().substring(0, 50)
                     })
                 });
@@ -543,6 +724,7 @@
             }
         }
 
+        // Start the game
         initGame();
 
     </script>
