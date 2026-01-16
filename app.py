@@ -8,8 +8,8 @@ from datetime import datetime, timedelta
 from database import db, Score, Card
 
 # Feature flag: Set to True to use local card database, False to use Scryfall API
-USE_LOCAL_CARDS = os.environ.get('USE_LOCAL_CARDS', 'false').lower() == 'true'
-# USE_LOCAL_CARDS = True
+# USE_LOCAL_CARDS = os.environ.get('USE_LOCAL_CARDS', 'false').lower() == 'true'
+USE_LOCAL_CARDS = True
 def normalize_mana_cost(cost):
     if not cost:
         return ""
@@ -61,7 +61,13 @@ def create_tables():
         app._tables_created = True
 
 @app.route("/")
-def index():
+def home():
+    """Landing page showcasing all games"""
+    return render_template("home.html")
+
+@app.route("/guess_mana_cost")
+def guess_mana_cost():
+    """Guess the Mana Cost game"""
     if "lives" not in session:
         session["lives"] = 3
         session["score"] = 0
