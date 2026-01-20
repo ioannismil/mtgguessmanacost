@@ -105,75 +105,71 @@ let usernameModalResolver = null;
  */
 function showUsernameModal() {
     return new Promise((resolve) => {
-        // Ensure modal exists
-        let modal = document.getElementById('username-modal');
-        if (!modal) {
-            // Create modal if it doesn't exist yet
-            modal = document.createElement('div');
-            modal.id = 'username-modal';
-            modal.className = 'username-modal-overlay';
-            modal.innerHTML = `
-                <div class="username-modal-content" onclick="event.stopPropagation()">
-                    <h3>🏆 Leaderboard Submission</h3>
-                    <p>Enter your name (or leave blank for Anonymous)</p>
-                    <input 
-                        type="text" 
-                        id="username-input" 
-                        class="username-modal-input" 
-                        maxlength="50" 
-                        placeholder="Your name..."
-                    />
-                    <div class="username-modal-actions">
-                        <button class="username-modal-btn cancel" id="cancel-username-btn">Cancel</button>
-                        <button class="username-modal-btn submit" id="submit-username-btn">Submit Score</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            // Close modal when clicking outside
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeUsernameModal();
-                }
-            });
+        // Remove existing modal if present to ensure clean state
+        const existingModal = document.getElementById('username-modal');
+        if (existingModal) {
+            existingModal.remove();
         }
+
+        // Create fresh modal every time
+        const modal = document.createElement('div');
+        modal.id = 'username-modal';
+        modal.className = 'username-modal-overlay show';
+        modal.innerHTML = `
+            <div class="username-modal-content" onclick="event.stopPropagation()">
+                <h3>🏆 Leaderboard Submission</h3>
+                <p>Enter your name (or leave blank for Anonymous)</p>
+                <input 
+                    type="text" 
+                    id="username-input" 
+                    class="username-modal-input" 
+                    maxlength="50" 
+                    placeholder="Your name..."
+                    autocomplete="off"
+                />
+                <div class="username-modal-actions">
+                    <button type="button" class="username-modal-btn cancel" id="cancel-username-btn">Cancel</button>
+                    <button type="button" class="username-modal-btn submit" id="submit-username-btn">Submit Score</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
 
         const input = document.getElementById('username-input');
         const submitBtn = document.getElementById('submit-username-btn');
         const cancelBtn = document.getElementById('cancel-username-btn');
 
-        // Store resolver
-        usernameModalResolver = resolve;
-
-        // Reset and show modal
-        input.value = '';
-        modal.classList.add('show');
-
-        // Focus input after animation
+        // Focus input after brief delay for animation
         setTimeout(() => input.focus(), 100);
 
         // Handle submit
         const handleSubmit = () => {
             const username = input.value.trim() || 'Anonymous';
-            closeUsernameModal();
-            if (usernameModalResolver) {
-                usernameModalResolver(username);
-                usernameModalResolver = null;
-            }
+            modal.classList.remove('show');
+            setTimeout(() => modal.remove(), 200);
+            resolve(username);
         };
 
         // Handle cancel
         const handleCancel = () => {
-            closeUsernameModal();
+            modal.classList.remove('show');
+            setTimeout(() => modal.remove(), 200);
+            resolve('Anonymous');
         };
 
-        // Remove old listeners and add new ones
-        submitBtn.onclick = handleSubmit;
-        cancelBtn.onclick = handleCancel;
+        // Add event listeners
+        submitBtn.addEventListener('click', handleSubmit);
+        cancelBtn.addEventListener('click', handleCancel);
 
-        // Handle Enter and Escape keys
-        const keyHandler = (e) => {
+        // Click outside to cancel
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                handleCancel();
+            }
+        });
+
+        // Keyboard shortcuts
+        input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 handleSubmit();
@@ -181,24 +177,17 @@ function showUsernameModal() {
                 e.preventDefault();
                 handleCancel();
             }
-        };
-
-        // Remove old key listener and add new one
-        input.removeEventListener('keydown', keyHandler);
-        input.addEventListener('keydown', keyHandler);
+        });
     });
 }
 
 /**
- * Close username modal
+ * Close username modal (for backwards compatibility)
  */
 function closeUsernameModal() {
     const modal = document.getElementById('username-modal');
-    modal.classList.remove('show');
-
-    // If modal was cancelled, resolve with Anonymous
-    if (usernameModalResolver) {
-        usernameModalResolver('Anonymous');
-        usernameModalResolver = null;
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 200);
     }
 }
