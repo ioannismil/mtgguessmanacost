@@ -39,6 +39,7 @@
       "url": "https://mtgtrivia.xyz/higher_lower"
     }
     </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='toast-styles.css') }}">
     <style>
         :root {
             --bg-color: #20232a;
@@ -559,6 +560,7 @@
             Policy</a>
     </footer>
 
+    <script src="{{ url_for('static', filename='toast-system.js') }}"></script>
     <script>
         let leftCard = null;
         let rightCard = null;
@@ -696,14 +698,14 @@
             if (rightCard) {
                 render();
             } else {
-                // If fetch failed, try one more time or alert?
+                // If fetch failed, show error toast
                 isLoading = false;
-                alert("Failed to load next card. Please refresh.");
+                showError("Failed to load next card", "Please check your connection and try again.");
             }
         }
 
         async function submitToLeaderboard(score, streak = 0) {
-            const username = prompt("🏆 Enter your name for the leaderboard (or leave blank for Anonymous):") || "Anonymous";
+            const username = await showUsernameModal();
 
             try {
                 const response = await fetch('/api/submit_score', {
@@ -720,7 +722,7 @@
                 const result = await response.json();
 
                 if (result.rank) {
-                    alert(`🎉 You ranked #${result.rank} on the leaderboard!`);
+                    showSuccess(`You ranked #${result.rank} on the leaderboard!`, `Great job, ${username}!`);
                 }
             } catch (error) {
                 console.error('Failed to submit score:', error);
@@ -729,7 +731,7 @@
 
         async function gameOver() {
             stopTimer();
-            alert(`Game Over! Final Score: ${score}`);
+            showInfo(`Game Over!`, `Final Score: ${score}`);
 
             // Submit to leaderboard
             await submitToLeaderboard(score);

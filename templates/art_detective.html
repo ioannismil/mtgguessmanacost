@@ -37,6 +37,7 @@
       "url": "https://mtgtrivia.xyz/art_detective"
     }
     </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='toast-styles.css') }}">
     <style>
         :root {
             --bg-color: #20232a;
@@ -994,6 +995,7 @@
             <a href="/privacy" style="color: #666; text-decoration: none; border-bottom: 1px dotted #666;">Privacy
                 Policy</a>
         </footer>
+        <script src="{{ url_for('static', filename='toast-system.js') }}"></script>
         <script>
             let currentCard = null;
             let selectedColors = new Set();
@@ -1223,7 +1225,7 @@
             }
 
             async function submitToLeaderboard(score, streak = 0) {
-                const username = prompt("🏆 Enter your name for the leaderboard (or leave blank for Anonymous):") || "Anonymous";
+                const username = await showUsernameModal();
 
                 try {
                     const response = await fetch('/api/submit_score', {
@@ -1240,7 +1242,7 @@
                     const result = await response.json();
 
                     if (result.rank) {
-                        alert(`🎉 You ranked #${result.rank} on the leaderboard!`);
+                        showSuccess(`You ranked #${result.rank} on the leaderboard!`, `Great job, ${username}!`);
                     }
                 } catch (error) {
                     console.error('Failed to submit score:', error);

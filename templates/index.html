@@ -40,7 +40,7 @@
     "url": "https://mtgtrivia.xyz/"
   }
   </script>
-
+  <link rel="stylesheet" href="{{ url_for('static', filename='toast-styles.css') }}">
   <style>
     :root {
       --bg-color: #20232a;
@@ -1127,9 +1127,7 @@
     <a href="/privacy" style="color: #666; text-decoration: none; border-bottom: 1px dotted #666;">Privacy Policy</a>
   </footer>
 
-
-
-
+  <script src="{{ url_for('static', filename='toast-system.js') }}"></script>
   <script>
     function toggleNav() {
       document.getElementById('navLinks').classList.toggle('active');
@@ -1469,7 +1467,7 @@
     }
 
     async function submitToLeaderboard(score, streak) {
-      const username = prompt("🏆 Enter your name for the leaderboard (or leave blank for Anonymous):") || "Anonymous";
+      const username = await showUsernameModal();
 
       try {
         const response = await fetch('/api/submit_score', {
@@ -1486,7 +1484,7 @@
         const result = await response.json();
 
         if (result.rank) {
-          alert(`🎉 You ranked #${result.rank} on the leaderboard!`);
+          showSuccess(`You ranked #${result.rank} on the leaderboard!`, `Great job, ${username}!`);
         }
       } catch (error) {
         console.error('Failed to submit score:', error);
@@ -1501,7 +1499,7 @@
       const finalScore = parseInt(document.getElementById('score').textContent) || 0;
       const finalStreak = parseInt(document.getElementById('streak').textContent) || 0;
 
-      alert(`Time's Up! Final Score: ${finalScore}`);
+      showInfo("Time's Up!", `Final Score: ${finalScore}`);
 
       // Submit to leaderboard
       await submitToLeaderboard(finalScore, finalStreak);
