@@ -221,7 +221,24 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
             object-fit: cover;
             background: #1a1c22;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }
+
+        .card-image.loaded {
+            animation: fadeInSlide 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeInSlide {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         /* Overlay specific to Higher/Lower right card */
@@ -279,7 +296,7 @@
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             width: 160px;
             display: flex;
             align-items: center;
@@ -295,6 +312,11 @@
         .btn-up:hover {
             background: #43a047;
             transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-up:active {
+            transform: scale(0.98);
         }
 
         .btn-down {
@@ -305,6 +327,11 @@
         .btn-down:hover {
             background: #e53935;
             transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-down:active {
+            transform: scale(0.98);
         }
 
         .result-overlay {
@@ -413,6 +440,23 @@
             }
 
             100% {
+                opacity: 1;
+            }
+        }
+
+        /* Accessibility: Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .card-image.loaded {
+                animation: none;
                 opacity: 1;
             }
         }
@@ -529,7 +573,7 @@
         // Fetch a new random card
         async function fetchCard() {
             try {
-                const res = await fetch('/get_card?new_card=true');
+                const res = await fetch('/get_card?new_card=true&mode=higher_lower');
                 const data = await res.json();
                 return data; // { name, image, mana_cost, cmc }
             } catch (e) {
@@ -598,14 +642,32 @@
 
             // Left Card
             const imgLeft = document.getElementById('img-left');
+            imgLeft.classList.remove('loaded');
             imgLeft.src = leftCard.image;
             imgLeft.alt = leftCard.name;
+            // Check if image is already loaded (cached)
+            if (imgLeft.complete) {
+                setTimeout(() => imgLeft.classList.add('loaded'), 10);
+            } else {
+                imgLeft.onload = () => {
+                    setTimeout(() => imgLeft.classList.add('loaded'), 10);
+                };
+            }
             document.getElementById('cmc-left').textContent = leftCard.cmc;
 
             // Right Card
             const imgRight = document.getElementById('img-right');
+            imgRight.classList.remove('loaded');
             imgRight.src = rightCard.image;
             imgRight.alt = rightCard.name;
+            // Check if image is already loaded (cached)
+            if (imgRight.complete) {
+                setTimeout(() => imgRight.classList.add('loaded'), 10);
+            } else {
+                imgRight.onload = () => {
+                    setTimeout(() => imgRight.classList.add('loaded'), 10);
+                };
+            }
             document.getElementById('cmc-right').textContent = rightCard.cmc;
 
             // Reset Right visuals

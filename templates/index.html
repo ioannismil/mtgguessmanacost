@@ -191,6 +191,23 @@
       border-radius: 10px;
       box-shadow: 0 0 10px #444;
       transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    .card-image.loaded {
+      animation: fadeInCard 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes fadeInCard {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .hide-mana-cost {
@@ -221,12 +238,18 @@
       margin: 5px;
       vertical-align: middle;
       cursor: pointer;
-      transition: transform 0.1s, opacity 0.2s;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, filter 0.2s ease;
       touch-action: manipulation;
     }
 
     .mana-symbol:hover {
       transform: scale(1.2);
+      filter: brightness(1.2) drop-shadow(0 0 8px rgba(97, 218, 251, 0.5));
+    }
+
+    .mana-symbol:active {
+      transform: scale(1.1);
+      transition: transform 0.1s;
     }
 
     .guess-display {
@@ -256,7 +279,7 @@
       cursor: pointer;
       font-weight: 600;
       color: #000;
-      transition: background 0.3s, transform 0.1s;
+      transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s ease, box-shadow 0.2s ease;
       font-size: 1rem;
       touch-action: manipulation;
     }
@@ -264,6 +287,12 @@
     button:hover:not(:disabled) {
       background-color: #52c0e8;
       transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(97, 218, 251, 0.3);
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(0.98);
+      transition: transform 0.1s;
     }
 
     button:disabled {
@@ -494,7 +523,8 @@
       border-radius: 15px;
       margin-bottom: 2rem;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      animation: fadeIn 0.3s ease;
+      animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: top;
     }
 
     @keyframes fadeIn {
@@ -506,6 +536,35 @@
       to {
         opacity: 1;
         transform: translateY(0);
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-15px) scaleY(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+      }
+    }
+
+    /* Accessibility: Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      .card-image.loaded {
+        animation: none;
+        opacity: 1;
       }
     }
 
@@ -1561,6 +1620,8 @@
             cardWrapper.classList.remove("loading");
             cardWrapper.innerHTML = "";
             cardWrapper.appendChild(img);
+            // Trigger fade-in animation after a brief delay to ensure DOM update
+            setTimeout(() => img.classList.add("loaded"), 10);
 
             const manaOverlay = document.createElement("div");
             manaOverlay.id = "mana_symbol";

@@ -135,6 +135,7 @@
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
             margin-bottom: 2rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .art-frame.revealed {
@@ -146,7 +147,24 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: filter 0.3s;
+            transition: filter 0.3s ease, opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }
+
+        .art-image.loaded {
+            animation: fadeInZoom 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeInZoom {
+            from {
+                opacity: 0;
+                transform: scale(1.05);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .art-image.censored {
@@ -177,14 +195,19 @@
             border-radius: 50%;
             border: 3px solid transparent;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
             position: relative;
             opacity: 0.6;
             filter: grayscale(0.8);
         }
 
         .color-btn:hover {
-            transform: scale(1.1);
+            transform: scale(1.15);
+            filter: grayscale(0.4);
+        }
+
+        .color-btn:active {
+            transform: scale(1.05);
         }
 
         .color-btn.selected {
@@ -193,6 +216,21 @@
             filter: grayscale(0);
             box-shadow: 0 0 15px currentColor;
             border-color: #fff;
+            animation: selectPulse 0.3s ease-out;
+        }
+
+        @keyframes selectPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.25);
+            }
+
+            100% {
+                transform: scale(1.15);
+            }
         }
 
         /* MTG Colors */
@@ -253,12 +291,16 @@
             border-radius: 30px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .submit-btn:hover:not(:disabled) {
             transform: scale(1.05);
             box-shadow: 0 0 15px rgba(97, 218, 251, 0.4);
+        }
+
+        .submit-btn:active:not(:disabled) {
+            transform: scale(0.98);
         }
 
         .submit-btn:disabled {
@@ -722,6 +764,27 @@
         .suggestion-item:hover {
             background: rgba(255, 255, 255, 0.1);
         }
+
+        /* Accessibility: Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .art-image.loaded {
+                animation: none;
+                opacity: 1;
+            }
+
+            .color-btn.selected {
+                animation: none;
+            }
+        }
     </style>
 </head>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-BV26PCJVKY"></script>
@@ -1065,9 +1128,13 @@
                     // Preload image
                     const img = new Image();
                     img.onload = () => {
-                        document.getElementById('art-display').src = data.art_crop;
-                        document.getElementById('art-display').dataset.full = data.image; // Store full image URI
+                        const artDisplay = document.getElementById('art-display');
+                        artDisplay.classList.remove('loaded');
+                        artDisplay.src = data.art_crop;
+                        artDisplay.dataset.full = data.image; // Store full image URI
                         document.getElementById('loading-overlay').style.opacity = '0';
+                        // Trigger fade-in animation
+                        setTimeout(() => artDisplay.classList.add('loaded'), 10);
 
                         // Preload full image too?
                         if (data.image) {
