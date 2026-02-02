@@ -143,13 +143,19 @@ def get_daily_challenge_card(seed_string):
         ~Card.type_line.like('%Land%')
     )
     
-    # Get all matching cards
-    all_cards = query.all()
+    # EFFICIENT: Get count instead of loading all cards
+    total_count = query.count()
     
-    if not all_cards:
+    if total_count == 0:
         return None
     
-    # Use seeded random to select the same card for everyone on this day
-    selected_card = random.choice(all_cards)
+    # Use seeded random to pick an index
+    random_index = random.randint(0, total_count - 1)
+    
+    # Get only the single card at that index using offset
+    selected_card = query.offset(random_index).first()
+    
+    if not selected_card:
+        return None
     
     return selected_card.to_dict()
