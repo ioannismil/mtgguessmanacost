@@ -118,3 +118,38 @@ def apply_format_filter(query, formats_filter):
         query = query.filter(db.or_(*conditions))
     
     return query
+
+
+def get_daily_challenge_card(seed_string):
+    """
+    Get the daily challenge card using a date-based seed
+    
+    Args:
+        seed_string: Date string (e.g., "2026-02-02") used as random seed
+    
+    Returns:
+        dict: Card data in Scryfall-compatible format, or None if no suitable card found
+    """
+    import random
+    
+    # Set seed for reproducible randomness
+    random.seed(seed_string)
+    
+    # Query cards suitable for daily challenge
+    # Requirements: has mana cost, not a land, not too obscure
+    query = Card.query.filter(
+        Card.mana_cost.isnot(None),
+        Card.mana_cost != '',
+        ~Card.type_line.like('%Land%')
+    )
+    
+    # Get all matching cards
+    all_cards = query.all()
+    
+    if not all_cards:
+        return None
+    
+    # Use seeded random to select the same card for everyone on this day
+    selected_card = random.choice(all_cards)
+    
+    return selected_card.to_dict()

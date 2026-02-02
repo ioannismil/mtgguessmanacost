@@ -171,27 +171,36 @@
 
         /* Games Grid */
         .games-grid {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto 4rem;
             padding: 0 2rem;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
         }
 
         .game-card {
             background: var(--card-bg);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            padding: 2rem;
+            padding: 2.5rem;
             transition: all 0.3s;
             text-decoration: none;
             color: inherit;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             position: relative;
             overflow: hidden;
+            min-height: 280px;
         }
 
         .game-card::before {
@@ -333,7 +342,236 @@
                 padding: 0 1rem;
             }
         }
+
+        /* Daily Challenge Section */
+        .daily-challenge {
+            max-width: 800px;
+            margin: 0 auto 4rem;
+            padding: 0 2rem;
+        }
+
+        .daily-challenge-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .daily-challenge-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, var(--accent), #d6d6d6);
+        }
+
+        .challenge-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .challenge-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .challenge-subtitle {
+            color: #aaa;
+            font-size: 0.95rem;
+        }
+
+        .challenge-card-image {
+            width: 100%;
+            max-width: 350px;
+            margin: 0 auto 1.5rem;
+            display: block;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+        }
+
+        .challenge-card-image:hover {
+            transform: scale(1.02);
+        }
+
+        .mana-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .mana-symbol-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mana-symbol-btn:hover {
+            background: rgba(97, 218, 251, 0.2);
+            border-color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .mana-guess-display {
+            min-height: 60px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .submit-guess-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-guess-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(97, 218, 251, 0.4);
+        }
+
+        .submit-guess-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .challenge-result {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .challenge-result.correct {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4caf50;
+            color: #4caf50;
+        }
+
+        .challenge-result.incorrect {
+            background: rgba(244, 67, 54, 0.2);
+            border: 2px solid #f44336;
+            color: #f44336;
+        }
+
+        .challenge-result.already-attempted {
+            background: rgba(255, 193, 7, 0.2);
+            border: 2px solid #ffc107;
+            color: #ffc107;
+        }
+
+        .correct-answer {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .correct-answer-label {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+
+        .clear-btn {
+            padding: 0.6rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .clear-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent);
+        }
+
+        /* Hide mana cost overlay */
+        .hide-mana-cost {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 30%;
+            height: 10%;
+            background: rgba(32, 35, 42, 1);
+            border-top-right-radius: 10px;
+            border-bottom-left-radius: 40px;
+            z-index: 10;
+        }
+
+        /* Mana symbol styling */
+        .mana-symbol {
+            width: 38px;
+            height: 38px;
+            margin: 5px;
+            vertical-align: middle;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, filter 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        .mana-symbol:hover {
+            transform: scale(1.2);
+            filter: brightness(1.2) drop-shadow(0 0 8px rgba(97, 218, 251, 0.5));
+        }
+
+        .mana-symbol:active {
+            transform: scale(1.1);
+            transition: transform 0.1s;
+        }
+
+        /* Card container for daily challenge */
+        .challenge-card-container {
+            position: relative;
+            display: inline-block;
+            margin: 0 auto 1.5rem;
+        }
     </style>
+
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7728230912872054"
         crossorigin="anonymous"></script>
 </head>
@@ -374,7 +612,22 @@
         </p>
     </div>
 
+    <!-- Daily Challenge Section -->
+    <div class="daily-challenge">
+        <div class="daily-challenge-card">
+            <div class="challenge-header">
+                <h2 class="challenge-title">Daily Challenge</h2>
+
+            </div>
+
+            <div id="challengeContent">
+                <div class="loading-spinner">Loading today's challenge...</div>
+            </div>
+        </div>
+    </div>
+
     <div class="games-grid">
+
         <a href="/guess_mana_cost" class="game-card">
             <h2 class="game-title">Guess The Mana Cost</h2>
             <p class="game-description">
@@ -459,7 +712,144 @@
         function toggleNav() {
             document.getElementById('navLinks').classList.toggle('active');
         }
+
+        // Daily Challenge Logic
+        let currentChallenge = null;
+        let currentGuess = [];
+
+        // Load daily challenge on page load
+        document.addEventListener('DOMContentLoaded', loadDailyChallenge);
+
+        async function loadDailyChallenge() {
+            try {
+                const response = await fetch('/api/daily_challenge');
+                const data = await response.json();
+
+                if (data.already_attempted) {
+                    showAlreadyAttempted(data);
+                } else {
+                    currentChallenge = data;
+                    showChallengeInput(data);
+                }
+            } catch (error) {
+                document.getElementById('challengeContent').innerHTML =
+                    '<div class="challenge-result incorrect">Failed to load challenge. Please refresh the page.</div>';
+            }
+        }
+
+        function showChallengeInput(data) {
+            const content = document.getElementById('challengeContent');
+            content.innerHTML = `
+                <div class="challenge-card-container">
+                    <img src="${data.image}" alt="${data.name}" class="challenge-card-image">
+                    <div class="hide-mana-cost"></div>
+                </div>
+                <div class="mana-guess-display" id="guessDisplay">
+                    <span style="color: #666;">Click symbols below to build your guess</span>
+                </div>
+                <button class="clear-btn" onclick="clearGuess()">Clear</button>
+                <div class="mana-input-container">
+                    ${['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'W', 'U', 'B', 'R', 'G', 'C', 'X'].map(symbol =>
+                `<img src="https://svgs.scryfall.io/card-symbols/${symbol}.svg" class="mana-symbol" alt="${symbol}" title="${symbol}" onclick="addManaSymbol('${symbol}')">`
+            ).join('')}
+                </div>
+                <button class="submit-guess-btn" onclick="submitGuess()">Submit Guess</button>
+            `;
+        }
+
+        function showAlreadyAttempted(data) {
+            const content = document.getElementById('challengeContent');
+            const statusClass = data.status === 'correct' ? 'correct' : 'already-attempted';
+            content.innerHTML = `
+                <div class="challenge-result ${statusClass}">
+                    ${data.message}
+                </div>
+            `;
+        }
+
+        function addManaSymbol(symbol) {
+            currentGuess.push(symbol);
+            updateGuessDisplay();
+        }
+
+        function clearGuess() {
+            currentGuess = [];
+            updateGuessDisplay();
+        }
+
+        function updateGuessDisplay() {
+            const display = document.getElementById('guessDisplay');
+            if (currentGuess.length === 0) {
+                display.innerHTML = '<span style="color: #666;">Click symbols below to build your guess</span>';
+            } else {
+                display.innerHTML = currentGuess.map(s =>
+                    `<img src="https://svgs.scryfall.io/card-symbols/${s}.svg" class="mana-symbol" alt="${s}">`
+                ).join('');
+            }
+        }
+
+        async function submitGuess() {
+            if (currentGuess.length === 0) {
+                alert('Please enter a mana cost guess!');
+                return;
+            }
+
+            const guessString = currentGuess.map(s => `{${s}}`).join('');
+
+            try {
+                const response = await fetch('/api/daily_challenge/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        guess: guessString,
+                        token: currentChallenge.token,
+                        allow_anagrams: false
+                    })
+                });
+
+                const result = await response.json();
+                showResult(result);
+            } catch (error) {
+                alert('Failed to submit guess. Please try again.');
+            }
+        }
+
+        function showResult(result) {
+            const content = document.getElementById('challengeContent');
+            const resultClass = result.correct ? 'correct' : 'incorrect';
+
+            // Parse mana cost and render as SVG icons
+            const manaSymbols = result.correct_cost.match(/\{[^}]+\}/g) || [];
+            const manaIconsHTML = manaSymbols.map(symbol => {
+                const clean = symbol.replace(/[{}]/g, '');
+                return `<img src="https://svgs.scryfall.io/card-symbols/${clean}.svg" class="mana-symbol" alt="${clean}">`;
+            }).join('');
+
+            content.innerHTML = `
+                <div class="challenge-card-container">
+                    <img src="${currentChallenge.image}" alt="${result.card_name}" class="challenge-card-image">
+                </div>
+                <div class="challenge-result ${resultClass}">
+                    ${result.message}
+                </div>
+                <div class="correct-answer">
+                    <div class="correct-answer-label">Correct Answer:</div>
+                    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; margin-top: 0.5rem;">
+                        ${manaIconsHTML || '<span style="color: var(--accent);">No mana cost</span>'}
+                    </div>
+                </div>
+                ${result.scryfall_uri ? `
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <a href="${result.scryfall_uri}" target="_blank" 
+                           style="color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent);">
+                            View on Scryfall →
+                        </a>
+                    </div>
+                ` : ''}
+            `;
+        }
     </script>
+
 </body>
 
 </html>

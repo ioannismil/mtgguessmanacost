@@ -479,7 +479,93 @@ def guess():
 
     return jsonify(result)
 
+@app.route("/api/daily_challenge")
+def daily_challenge():
+    """Get today's daily challenge card - same for all users"""
+    from datetime import date
+    from card_queries import get_daily_challenge_card
+    
+    # Get today's date as seed
+    today = date.today().isoformat()  # "2026-02-02"
+    session_key = f"daily_challenge_{today}"
+    
+    # Check if user already attempted today
+    if session_key in session:
+        status = session[session_key]
+        return jsonify({
+            "already_attempted": True,
+            "status": status,  # "correct" or "incorrect"
+            "message": "You've already attempted today's challenge! Come back tomorrow." if status == "incorrect" else "You got it right! Come back tomorrow for a new challenge."
+        })
+    
+    # Get today's challenge card using date-based seed
+    card_data = get_daily_challenge_card(today)
+    
+    if not card_data:
+        return jsonify({"error": "Could not generate daily challenge"}), 500
+    
+    # Generate secure token for answer validation
+    token_data = {
+        "name": card_data["name"],
+        "mana_cost": card_data["mana_cost"],
+        "cmc": card_data["cmc"],
+        "image": card_data["image"],
+        "scryfall_uri": card_data.get("scryfall_uri", "")
+    }
+    token = generate_card_token(token_data)
+    
+    # Return card data without mana cost (anti-cheat)
+    return jsonify({
+        "name": card_data["name"],
+        "image": card_data["image"],
+        "token": token,
+        "already_attempted": False,
+        "status": "not_attempted"
+    })
+
+@app.route("/api/daily_challenge/submit", methods=["POST"])
+def submit_daily_challenge():
+    """Submit a guess for today's daily challenge"""
+    from datetime import date
+    
+    data = request.get_json()
+    user_guess = data.get("guess", "").upper().replace(" ", "").replace("/", "")
+    token = data.get("token")
+    allow_anagrams = data.get("allow_anagrams", False)
+    
+    if not token:
+        return jsonify({"error": "Missing game token"}), 400
+    
+    # Verify token
+    card_data = verify_card_token(token)
+    if not card_data:
+        return jsonify({"error": "Invalid or expired token"}), 400
+    
+    # Check answer
+    correct_cost = card_data["mana_cost"].upper().replace(" ", "").replace("/", "")
+    
+    if allow_anagrams:
+        is_correct = normalize_mana_cost(user_guess) == normalize_mana_cost(correct_cost)
+    else:
+        is_correct = user_guess == correct_cost
+    
+    # Store result in session
+    today = date.today().isoformat()
+    session_key = f"daily_challenge_{today}"
+    session[session_key] = "correct" if is_correct else "incorrect"
+    session.modified = True
+    
+    # Return result (NO leaderboard prompt)
+    return jsonify({
+        "correct": is_correct,
+        "message": "✅ Correct! Come back tomorrow for a new challenge!" if is_correct else "❌ Wrong! Try again tomorrow.",
+        "correct_cost": correct_cost,
+        "scryfall_uri": card_data.get("scryfall_uri", ""),
+        "card_name": card_data.get("name", "")
+    })
+
 @app.route("/reset", methods=["POST"])
+
 def reset():
     data = request.get_json() or {}
     mode = data.get("mode", "classic")
