@@ -739,6 +739,19 @@
 
         function showChallengeInput(data) {
             const content = document.getElementById('challengeContent');
+
+            // Complete mana symbols list matching Guess Mana Cost game
+            const manaSymbols = [
+                "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16",
+                "W", "U", "B", "R", "G",
+                "WU", "WB", "UB", "UR", "BR", "BG", "RG", "RW", "GW", "GU",
+                "CW", "CU", "CB", "CR", "CG",
+                "2W", "2U", "2B", "2R", "2G",
+                "RGP", "GWP", "RWP", "GUP",
+                "WP", "UP", "BP", "RP", "GP",
+                "C", "X"
+            ];
+
             content.innerHTML = `
                 <div class="challenge-card-container">
                     <img src="${data.image}" alt="${data.name}" class="challenge-card-image">
@@ -749,8 +762,12 @@
                 </div>
                 <button class="clear-btn" onclick="clearGuess()">Clear</button>
                 <div class="mana-input-container">
-                    ${['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'W', 'U', 'B', 'R', 'G', 'C', 'X'].map(symbol =>
-                `<img src="https://svgs.scryfall.io/card-symbols/${symbol}.svg" class="mana-symbol" alt="${symbol}" title="${symbol}" onclick="addManaSymbol('${symbol}')">`
+                    ${manaSymbols.map(symbol =>
+                `<img src="https://svgs.scryfall.io/card-symbols/${symbol}.svg" 
+                              class="mana-symbol" 
+                              alt="${symbol}" 
+                              title="${symbol}"
+                              onclick="addManaSymbol('${symbol}')">`
             ).join('')}
                 </div>
                 <button class="submit-guess-btn" onclick="submitGuess()">Submit Guess</button>
