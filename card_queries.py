@@ -137,11 +137,12 @@ def get_daily_challenge_card(seed_string):
     
     # Query cards suitable for daily challenge
     # Requirements: has mana cost, not a land, not too obscure
+    # CRITICAL: Order by ID to ensure deterministic results
     query = Card.query.filter(
         Card.mana_cost.isnot(None),
         Card.mana_cost != '',
         ~Card.type_line.like('%Land%')
-    )
+    ).order_by(Card.id)  # Deterministic ordering!
     
     # EFFICIENT: Get count instead of loading all cards
     total_count = query.count()
@@ -153,6 +154,7 @@ def get_daily_challenge_card(seed_string):
     random_index = random.randint(0, total_count - 1)
     
     # Get only the single card at that index using offset
+    # Because of ORDER BY, same offset always returns same card
     selected_card = query.offset(random_index).first()
     
     if not selected_card:
